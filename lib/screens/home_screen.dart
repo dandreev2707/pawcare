@@ -81,20 +81,6 @@ class _HomeScreenState extends State<HomeScreen> {
                           )),
                     ],
                   ),
-                  // Кнопка профиля
-                  GestureDetector(
-                    onTap: () => context.go('/profile'),
-                    child: Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF2C6E49),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(Icons.person,
-                          color: Colors.white, size: 24),
-                    ),
-                  ),
                 ],
               ),
               const SizedBox(height: 24),
@@ -170,9 +156,12 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildPetCard(Map<String, dynamic> pet) {
-    final sex = pet['sex'] == 'male' ? '♂' : pet['sex'] == 'female' ? '♀' : '';
-    return Container(
+Widget _buildPetCard(Map<String, dynamic> pet) {
+  final sex = pet['sex'] == 'male' ? '♂' :
+              pet['sex'] == 'female' ? '♀' : '';
+  return GestureDetector(
+    onTap: () => context.push('/pet-detail', extra: pet),
+    child: Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -189,14 +178,26 @@ class _HomeScreenState extends State<HomeScreen> {
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         leading: Container(
-          width: 52,
-          height: 52,
+          width: 56,
+          height: 56,
           decoration: BoxDecoration(
             color: const Color(0xFFE8F5EE),
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(16),
           ),
-          child: const Icon(Icons.pets,
-              color: Color(0xFF2C6E49), size: 28),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: pet['photo_url'] != null
+                ? Image.network(
+                    'http://192.168.86.27:8001${pet['photo_url']}',
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => const Icon(
+                        Icons.pets,
+                        color: Color(0xFF2C6E49),
+                        size: 28),
+                  )
+                : const Icon(Icons.pets,
+                    color: Color(0xFF2C6E49), size: 28),
+          ),
         ),
         title: Text(
           '${pet['name']} $sex',
@@ -210,11 +211,20 @@ class _HomeScreenState extends State<HomeScreen> {
           style: const TextStyle(
               color: Color(0xFF666666), fontSize: 13),
         ),
-        trailing: IconButton(
-          icon: const Icon(Icons.delete_outline, color: Colors.red),
-          onPressed: () => _deletePet(pet['id']),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.chevron_right,
+                color: Color(0xFF2C6E49)),
+            IconButton(
+              icon: const Icon(Icons.delete_outline,
+                  color: Colors.red),
+              onPressed: () => _deletePet(pet['id']),
+            ),
+          ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }

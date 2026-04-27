@@ -1,9 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+
 class ApiService {
-  static const String baseUrl = 'http://10.0.2.2:8001';
-  
+  static const String baseUrl = 'http://192.168.86.27:8001';
+
   static final Dio _dio = Dio(BaseOptions(
     baseUrl: baseUrl,
     connectTimeout: const Duration(seconds: 10),
@@ -11,25 +12,21 @@ class ApiService {
     headers: {'Content-Type': 'application/json'},
   ));
 
-  // Сохранить токен
   static Future<void> saveToken(String token) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('token', token);
   }
 
-  // Получить токен
   static Future<String?> getToken() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('token');
   }
 
-  // Удалить токен (выход)
   static Future<void> deleteToken() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('token');
   }
 
-  // Заголовки с токеном
   static Future<Map<String, String>> _authHeaders() async {
     final token = await getToken();
     return {
@@ -45,14 +42,11 @@ class ApiService {
     required String password,
   }) async {
     try {
-      final response = await _dio.post(
-        '/api/v1/auth/register',
-        data: {'name': name, 'email': email, 'password': password},
-      );
+      final response = await _dio.post('/api/v1/auth/register',
+          data: {'name': name, 'email': email, 'password': password});
       return {'success': true, 'data': response.data};
     } on DioException catch (e) {
-      final message = e.response?.data['detail'] ?? 'Ошибка соединения';
-      return {'success': false, 'message': message};
+      return {'success': false, 'message': e.response?.data['detail'] ?? 'Ошибка соединения'};
     }
   }
 
@@ -62,33 +56,26 @@ class ApiService {
     required String password,
   }) async {
     try {
-      final response = await _dio.post(
-        '/api/v1/auth/login',
-        data: {'email': email, 'password': password},
-      );
+      final response = await _dio.post('/api/v1/auth/login',
+          data: {'email': email, 'password': password});
       return {'success': true, 'data': response.data};
     } on DioException catch (e) {
-      final message = e.response?.data['detail'] ?? 'Ошибка соединения';
-      return {'success': false, 'message': message};
+      return {'success': false, 'message': e.response?.data['detail'] ?? 'Ошибка соединения'};
     }
   }
 
-  // ПОЛУЧИТЬ ПИТОМЦЕВ
+  // ПИТОМЦЫ
   static Future<Map<String, dynamic>> getPets() async {
     try {
       final headers = await _authHeaders();
-      final response = await _dio.get(
-        '/api/v1/pets',
-        options: Options(headers: headers),
-      );
+      final response = await _dio.get('/api/v1/pets',
+          options: Options(headers: headers));
       return {'success': true, 'data': response.data};
     } on DioException catch (e) {
-      final message = e.response?.data['detail'] ?? 'Ошибка соединения';
-      return {'success': false, 'message': message};
+      return {'success': false, 'message': e.response?.data['detail'] ?? 'Ошибка соединения'};
     }
   }
 
-  // ДОБАВИТЬ ПИТОМЦА
   static Future<Map<String, dynamic>> createPet({
     required String name,
     String? breed,
@@ -97,54 +84,55 @@ class ApiService {
   }) async {
     try {
       final headers = await _authHeaders();
-      final response = await _dio.post(
-        '/api/v1/pets',
-        data: {
-          'name': name,
-          'breed': breed,
-          'birth_date': birthDate,
-          'sex': sex,
-        },
-        options: Options(headers: headers),
-      );
+      final response = await _dio.post('/api/v1/pets',
+          data: {'name': name, 'breed': breed, 'birth_date': birthDate, 'sex': sex},
+          options: Options(headers: headers));
       return {'success': true, 'data': response.data};
     } on DioException catch (e) {
-      final message = e.response?.data['detail'] ?? 'Ошибка соединения';
-      return {'success': false, 'message': message};
+      return {'success': false, 'message': e.response?.data['detail'] ?? 'Ошибка соединения'};
     }
   }
 
-  // УДАЛИТЬ ПИТОМЦА
   static Future<Map<String, dynamic>> deletePet(String petId) async {
     try {
       final headers = await _authHeaders();
-      await _dio.delete(
-        '/api/v1/pets/$petId',
-        options: Options(headers: headers),
-      );
+      await _dio.delete('/api/v1/pets/$petId', options: Options(headers: headers));
       return {'success': true};
     } on DioException catch (e) {
-      final message = e.response?.data['detail'] ?? 'Ошибка соединения';
-      return {'success': false, 'message': message};
+      return {'success': false, 'message': e.response?.data['detail'] ?? 'Ошибка соединения'};
     }
   }
 
-  // ПОЛУЧИТЬ ЗАПИСИ ЗДОРОВЬЯ
+  static Future<Map<String, dynamic>> uploadPetPhoto({
+    required String petId,
+    required String filePath,
+  }) async {
+    try {
+      final token = await getToken();
+      final formData = FormData.fromMap({
+        'file': await MultipartFile.fromFile(filePath),
+      });
+      final response = await _dio.post('/api/v1/pets/$petId/photo',
+          data: formData,
+          options: Options(headers: {'Authorization': 'Bearer $token'}));
+      return {'success': true, 'data': response.data};
+    } on DioException catch (e) {
+      return {'success': false, 'message': e.response?.data['detail'] ?? 'Ошибка загрузки'};
+    }
+  }
+
+  // ЗДОРОВЬЕ
   static Future<Map<String, dynamic>> getHealthRecords(String petId) async {
     try {
       final headers = await _authHeaders();
-      final response = await _dio.get(
-        '/api/v1/pets/$petId/health',
-        options: Options(headers: headers),
-      );
+      final response = await _dio.get('/api/v1/pets/$petId/health',
+          options: Options(headers: headers));
       return {'success': true, 'data': response.data};
     } on DioException catch (e) {
-      final message = e.response?.data['detail'] ?? 'Ошибка соединения';
-      return {'success': false, 'message': message};
+      return {'success': false, 'message': e.response?.data['detail'] ?? 'Ошибка соединения'};
     }
   }
 
-  // ДОБАВИТЬ ЗАПИСЬ ЗДОРОВЬЯ
   static Future<Map<String, dynamic>> addHealthRecord({
     required String petId,
     required String recordType,
@@ -155,21 +143,120 @@ class ApiService {
   }) async {
     try {
       final headers = await _authHeaders();
-      final response = await _dio.post(
-        '/api/v1/pets/$petId/health',
-        data: {
-          'record_type': recordType,
-          'title': title,
-          'description': description,
-          'record_date': recordDate,
-          'next_date': nextDate,
-        },
-        options: Options(headers: headers),
-      );
+      final response = await _dio.post('/api/v1/pets/$petId/health',
+          data: {
+            'record_type': recordType,
+            'title': title,
+            'description': description,
+            'record_date': recordDate,
+            'next_date': nextDate,
+          },
+          options: Options(headers: headers));
       return {'success': true, 'data': response.data};
     } on DioException catch (e) {
-      final message = e.response?.data['detail'] ?? 'Ошибка соединения';
-      return {'success': false, 'message': message};
+      return {'success': false, 'message': e.response?.data['detail'] ?? 'Ошибка соединения'};
     }
   }
+
+  // ВЕС
+  static Future<Map<String, dynamic>> getWeightLogs(String petId) async {
+    try {
+      final headers = await _authHeaders();
+      final response = await _dio.get('/api/v1/pets/$petId/weight',
+          options: Options(headers: headers));
+      return {'success': true, 'data': response.data};
+    } on DioException catch (e) {
+      return {'success': false, 'message': e.response?.data['detail'] ?? 'Ошибка соединения'};
+    }
+  }
+
+  static Future<Map<String, dynamic>> addWeight({
+    required String petId,
+    required double weightKg,
+  }) async {
+    try {
+      final headers = await _authHeaders();
+      final response = await _dio.post('/api/v1/pets/$petId/weight',
+          data: {'weight_kg': weightKg},
+          options: Options(headers: headers));
+      return {'success': true, 'data': response.data};
+    } on DioException catch (e) {
+      return {'success': false, 'message': e.response?.data['detail'] ?? 'Ошибка соединения'};
+    }
+  }
+
+  // НАПОМИНАНИЯ
+  static Future<Map<String, dynamic>> getReminders() async {
+    try {
+      final headers = await _authHeaders();
+      final response = await _dio.get('/api/v1/reminders',
+          options: Options(headers: headers));
+      return {'success': true, 'data': response.data};
+    } on DioException catch (e) {
+      return {'success': false, 'message': e.response?.data['detail'] ?? 'Ошибка соединения'};
+    }
+  }
+
+  static Future<Map<String, dynamic>> createReminder({
+    required String petId,
+    required String title,
+    required String remindAt,
+  }) async {
+    try {
+      final headers = await _authHeaders();
+      final response = await _dio.post('/api/v1/reminders',
+          data: {
+            'pet_id': petId,
+            'title': title,
+            'remind_at': remindAt,
+          },
+          options: Options(headers: headers));
+      return {'success': true, 'data': response.data};
+    } on DioException catch (e) {
+      return {'success': false, 'message': e.response?.data['detail'] ?? 'Ошибка соединения'};
+    }
+  }
+
+  static Future<Map<String, dynamic>> deleteReminder(String reminderId) async {
+    try {
+      final headers = await _authHeaders();
+      await _dio.delete('/api/v1/reminders/$reminderId',
+          options: Options(headers: headers));
+      return {'success': true};
+    } on DioException catch (e) {
+      return {'success': false, 'message': e.response?.data['detail'] ?? 'Ошибка соединения'};
+    }
+  }
+
+  // КАРТА
+  static Future<Map<String, dynamic>> getVets({
+    required double lat,
+    required double lon,
+  }) async {
+    try {
+      final headers = await _authHeaders();
+      final response = await _dio.get('/api/v1/map/vets',
+          queryParameters: {'lat': lat, 'lon': lon},
+          options: Options(headers: headers));
+      return {'success': true, 'data': response.data};
+    } on DioException catch (e) {
+      return {'success': false, 'message': e.response?.data['detail'] ?? 'Ошибка соединения'};
+    }
+  }
+// УДАЛИТЬ ЗАПИСЬ ЗДОРОВЬЯ
+static Future<Map<String, dynamic>> deleteHealthRecord({
+  required String petId,
+  required String recordId,
+}) async {
+  try {
+    final headers = await _authHeaders();
+    await _dio.delete(
+      '/api/v1/pets/$petId/health/$recordId',
+      options: Options(headers: headers),
+    );
+    return {'success': true};
+  } on DioException catch (e) {
+    return {'success': false, 'message': e.response?.data['detail'] ?? 'Ошибка'};
+  }
+}
 }

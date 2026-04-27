@@ -2,36 +2,51 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
-import 'screens/home_screen.dart';
+import 'screens/main_screen.dart';
 import 'screens/add_pet_screen.dart';
-import 'screens/profile_screen.dart';
+import 'screens/health_screen.dart';
+import 'screens/add_health_screen.dart';
+import 'screens/weight_screen.dart';
+import 'screens/map_screen.dart';
+import 'screens/pet_detail_screen.dart';
+
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const PawCareApp());
 }
 
 final _router = GoRouter(
   initialLocation: '/login',
   routes: [
+    GoRoute(path: '/login', builder: (c, s) => const LoginScreen()),
+    GoRoute(path: '/register', builder: (c, s) => const RegisterScreen()),
+    GoRoute(path: '/home', builder: (c, s) => const MainScreen()),
+    GoRoute(path: '/add-pet', builder: (c, s) => const AddPetScreen()),
     GoRoute(
-      path: '/login',
-      builder: (context, state) => const LoginScreen(),
+      path: '/health/:petId/:petName',
+      builder: (c, s) => HealthScreen(
+        petId: s.pathParameters['petId']!,
+        petName: s.pathParameters['petName']!,
+      ),
     ),
     GoRoute(
-      path: '/register',
-      builder: (context, state) => const RegisterScreen(),
+      path: '/add-health/:petId',
+      builder: (c, s) => AddHealthScreen(petId: s.pathParameters['petId']!),
     ),
     GoRoute(
-      path: '/home',
-      builder: (context, state) => const HomeScreen(),
+      path: '/weight/:petId/:petName',
+      builder: (c, s) => WeightScreen(
+        petId: s.pathParameters['petId']!,
+        petName: s.pathParameters['petName']!,
+      ),
     ),
+    GoRoute(path: '/map', builder: (c, s) => const MapScreen()),
     GoRoute(
-      path: '/add-pet',
-      builder: (context, state) => const AddPetScreen(),
-    ),
-    GoRoute(
-      path: '/profile',
-      builder: (context, state) => const ProfileScreen(),
-    ),
+  path: '/pet-detail',
+  builder: (context, state) => PetDetailScreen(
+    pet: state.extra as Map<String, dynamic>,
+  ),
+),
   ],
 );
 
@@ -46,7 +61,6 @@ class PawCareApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
           seedColor: const Color(0xFF2C6E49),
-          brightness: Brightness.light,
         ),
         useMaterial3: true,
         fontFamily: 'Roboto',
@@ -54,4 +68,5 @@ class PawCareApp extends StatelessWidget {
       routerConfig: _router,
     );
   }
+  
 }

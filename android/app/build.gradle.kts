@@ -4,7 +4,9 @@ plugins {
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
-
+dependencies {
+    implementation("com.yandex.android:maps.mobile:4.2.1-lite")
+}
 android {
     namespace = "com.example.pawcare"
     compileSdk = flutter.compileSdkVersion
