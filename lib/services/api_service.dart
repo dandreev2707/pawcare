@@ -34,7 +34,39 @@ class ApiService {
       'Authorization': 'Bearer $token',
     };
   }
+// TELEGRAM
+static Future<Map<String, dynamic>> getTelegramStatus() async {
+  try {
+    final headers = await _authHeaders();
+    final response = await _dio.get('/api/v1/telegram/status',
+        options: Options(headers: headers));
+    return {'success': true, 'data': response.data};
+  } on DioException catch (e) {
+    return {'success': false, 'message': e.response?.data['detail'] ?? 'Ошибка'};
+  }
+}
 
+static Future<Map<String, dynamic>> generateTelegramCode() async {
+  try {
+    final headers = await _authHeaders();
+    final response = await _dio.post('/api/v1/telegram/generate-code',
+        options: Options(headers: headers));
+    return {'success': true, 'data': response.data};
+  } on DioException catch (e) {
+    return {'success': false, 'message': e.response?.data['detail'] ?? 'Ошибка'};
+  }
+}
+
+static Future<Map<String, dynamic>> unlinkTelegram() async {
+  try {
+    final headers = await _authHeaders();
+    await _dio.delete('/api/v1/telegram/unlink',
+        options: Options(headers: headers));
+    return {'success': true};
+  } on DioException catch (e) {
+    return {'success': false, 'message': e.response?.data['detail'] ?? 'Ошибка'};
+  }
+}
   // РЕГИСТРАЦИЯ
   static Future<Map<String, dynamic>> register({
     required String name,

@@ -90,9 +90,8 @@ class _MapScreenState extends State<MapScreen> {
         point: _userLocation!,
         opacity: 1,
         icon: PlacemarkIcon.single(PlacemarkIconStyle(
-          image: BitmapDescriptor.fromAssetImage(
-              'packages/yandex_mapkit/lib/assets/yandex_logo.png'),
-          scale: 2.0,
+          image: BitmapDescriptor.fromAssetImage('assets/user_pin.png'),
+          scale: 1.0,
         )),
       ));
     }
@@ -110,8 +109,7 @@ class _MapScreenState extends State<MapScreen> {
         point: Point(latitude: lat, longitude: lon),
         opacity: 1,
         icon: PlacemarkIcon.single(PlacemarkIconStyle(
-          image: BitmapDescriptor.fromAssetImage(
-              'packages/yandex_mapkit/lib/assets/yandex_logo.png'),
+          image: BitmapDescriptor.fromAssetImage('assets/clinic_pin.png'),
           scale: 1.5,
         )),
         onTap: (_, __) => _showClinicInfo(clinics[idx]),
@@ -302,6 +300,53 @@ class _MapScreenState extends State<MapScreen> {
                 backgroundColor: Colors.white,
                 foregroundColor: const Color(0xFF2C6E49),
                 child: const Icon(Icons.my_location),
+              ),
+            ),
+            Positioned(
+              right: 16,
+              bottom: _clinics.isNotEmpty ? 200 : 80,
+              child: Column(
+                children: [
+                  FloatingActionButton.small(
+                    heroTag: 'zoom_in',
+                    onPressed: () async {
+                      if (_mapController != null) {
+                        final cameraPosition =
+                            await _mapController!.getCameraPosition();
+                        await _mapController!.moveCamera(
+                          CameraUpdate.newCameraPosition(
+                            CameraPosition(
+                              target: cameraPosition.target,
+                              zoom: cameraPosition.zoom + 1,
+                            ),
+                          ),
+                        );
+                      }
+                    },
+                    backgroundColor: Colors.white,
+                    child: const Icon(Icons.add, color: Color(0xFF2C6E49)),
+                  ),
+                  const SizedBox(height: 8),
+                  FloatingActionButton.small(
+                    heroTag: 'zoom_out',
+                    onPressed: () async {
+                      if (_mapController != null) {
+                        final cameraPosition =
+                            await _mapController!.getCameraPosition();
+                        await _mapController!.moveCamera(
+                          CameraUpdate.newCameraPosition(
+                            CameraPosition(
+                              target: cameraPosition.target,
+                              zoom: cameraPosition.zoom - 1,
+                            ),
+                          ),
+                        );
+                      }
+                    },
+                    backgroundColor: Colors.white,
+                    child: const Icon(Icons.remove, color: Color(0xFF2C6E49)),
+                  ),
+                ],
               ),
             ),
           ]),
