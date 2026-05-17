@@ -1,9 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import '../env.dart';
 
 class ApiService {
-  static const String baseUrl = 'http://192.168.86.27:8001';
+  static const String baseUrl = Env.baseUrl;
 
   static final Dio _dio = Dio(BaseOptions(
     baseUrl: baseUrl,
@@ -29,44 +29,41 @@ class ApiService {
 
   static Future<Map<String, String>> _authHeaders() async {
     final token = await getToken();
-    return {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer $token',
-    };
+    return {'Authorization': 'Bearer $token'};
   }
-// TELEGRAM
-static Future<Map<String, dynamic>> getTelegramStatus() async {
-  try {
-    final headers = await _authHeaders();
-    final response = await _dio.get('/api/v1/telegram/status',
-        options: Options(headers: headers));
-    return {'success': true, 'data': response.data};
-  } on DioException catch (e) {
-    return {'success': false, 'message': e.response?.data['detail'] ?? 'Ошибка'};
+  // TELEGRAM
+  static Future<Map<String, dynamic>> getTelegramStatus() async {
+    try {
+      final headers = await _authHeaders();
+      final response = await _dio.get('/api/v1/telegram/status',
+          options: Options(headers: headers));
+      return {'success': true, 'data': response.data};
+    } on DioException catch (e) {
+      return {'success': false, 'message': e.response?.data['detail'] ?? 'Ошибка'};
+    }
   }
-}
 
-static Future<Map<String, dynamic>> generateTelegramCode() async {
-  try {
-    final headers = await _authHeaders();
-    final response = await _dio.post('/api/v1/telegram/generate-code',
-        options: Options(headers: headers));
-    return {'success': true, 'data': response.data};
-  } on DioException catch (e) {
-    return {'success': false, 'message': e.response?.data['detail'] ?? 'Ошибка'};
+  static Future<Map<String, dynamic>> generateTelegramCode() async {
+    try {
+      final headers = await _authHeaders();
+      final response = await _dio.post('/api/v1/telegram/generate-code',
+          options: Options(headers: headers));
+      return {'success': true, 'data': response.data};
+    } on DioException catch (e) {
+      return {'success': false, 'message': e.response?.data['detail'] ?? 'Ошибка'};
+    }
   }
-}
 
-static Future<Map<String, dynamic>> unlinkTelegram() async {
-  try {
-    final headers = await _authHeaders();
-    await _dio.delete('/api/v1/telegram/unlink',
-        options: Options(headers: headers));
-    return {'success': true};
-  } on DioException catch (e) {
-    return {'success': false, 'message': e.response?.data['detail'] ?? 'Ошибка'};
+  static Future<Map<String, dynamic>> unlinkTelegram() async {
+    try {
+      final headers = await _authHeaders();
+      await _dio.delete('/api/v1/telegram/unlink',
+          options: Options(headers: headers));
+      return {'success': true};
+    } on DioException catch (e) {
+      return {'success': false, 'message': e.response?.data['detail'] ?? 'Ошибка'};
+    }
   }
-}
   // РЕГИСТРАЦИЯ
   static Future<Map<String, dynamic>> register({
     required String name,
@@ -96,6 +93,16 @@ static Future<Map<String, dynamic>> unlinkTelegram() async {
     }
   }
 
+  static Future<bool> validateToken() async {
+    try {
+      final headers = await _authHeaders();
+      await _dio.get('/api/v1/auth/me', options: Options(headers: headers));
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
   // ПИТОМЦЫ
   static Future<Map<String, dynamic>> getPets() async {
     try {
@@ -118,6 +125,29 @@ static Future<Map<String, dynamic>> unlinkTelegram() async {
       final headers = await _authHeaders();
       final response = await _dio.post('/api/v1/pets',
           data: {'name': name, 'breed': breed, 'birth_date': birthDate, 'sex': sex},
+          options: Options(headers: headers));
+      return {'success': true, 'data': response.data};
+    } on DioException catch (e) {
+      return {'success': false, 'message': e.response?.data['detail'] ?? 'Ошибка соединения'};
+    }
+  }
+
+  static Future<Map<String, dynamic>> updatePet({
+    required String petId,
+    String? name,
+    String? breed,
+    String? birthDate,
+    String? sex,
+  }) async {
+    try {
+      final headers = await _authHeaders();
+      final response = await _dio.put('/api/v1/pets/$petId',
+          data: {
+            if (name != null) 'name': name,
+            if (breed != null) 'breed': breed,
+            if (birthDate != null) 'birth_date': birthDate,
+            if (sex != null) 'sex': sex,
+          },
           options: Options(headers: headers));
       return {'success': true, 'data': response.data};
     } on DioException catch (e) {
@@ -233,6 +263,7 @@ static Future<Map<String, dynamic>> unlinkTelegram() async {
     required String petId,
     required String title,
     required String remindAt,
+    String? repeatRule,
   }) async {
     try {
       final headers = await _authHeaders();
@@ -241,6 +272,7 @@ static Future<Map<String, dynamic>> unlinkTelegram() async {
             'pet_id': petId,
             'title': title,
             'remind_at': remindAt,
+            if (repeatRule != null) 'repeat_rule': repeatRule,
           },
           options: Options(headers: headers));
       return {'success': true, 'data': response.data};
@@ -253,6 +285,34 @@ static Future<Map<String, dynamic>> unlinkTelegram() async {
     try {
       final headers = await _authHeaders();
       await _dio.delete('/api/v1/reminders/$reminderId',
+          options: Options(headers: headers));
+      return {'success': true};
+    } on DioException catch (e) {
+      return {'success': false, 'message': e.response?.data['detail'] ?? 'Ошибка соединения'};
+    }
+  }
+
+  static Future<Map<String, dynamic>> exportHealthPdf(String petId) async {
+    try {
+      final token = await getToken();
+      final response = await _dio.get(
+        '/api/v1/pets/$petId/health/export',
+        options: Options(
+          headers: {'Authorization': 'Bearer $token'},
+          responseType: ResponseType.bytes,
+          receiveTimeout: const Duration(seconds: 30),
+        ),
+      );
+      return {'success': true, 'bytes': response.data};
+    } on DioException catch (e) {
+      return {'success': false, 'message': e.response?.data.toString() ?? 'Ошибка экспорта'};
+    }
+  }
+
+  static Future<Map<String, dynamic>> completeReminder(String reminderId) async {
+    try {
+      final headers = await _authHeaders();
+      await _dio.put('/api/v1/reminders/$reminderId/done',
           options: Options(headers: headers));
       return {'success': true};
     } on DioException catch (e) {
@@ -275,20 +335,20 @@ static Future<Map<String, dynamic>> unlinkTelegram() async {
       return {'success': false, 'message': e.response?.data['detail'] ?? 'Ошибка соединения'};
     }
   }
-// УДАЛИТЬ ЗАПИСЬ ЗДОРОВЬЯ
-static Future<Map<String, dynamic>> deleteHealthRecord({
-  required String petId,
-  required String recordId,
-}) async {
-  try {
-    final headers = await _authHeaders();
-    await _dio.delete(
-      '/api/v1/pets/$petId/health/$recordId',
-      options: Options(headers: headers),
-    );
-    return {'success': true};
-  } on DioException catch (e) {
-    return {'success': false, 'message': e.response?.data['detail'] ?? 'Ошибка'};
+  // УДАЛИТЬ ЗАПИСЬ ЗДОРОВЬЯ
+  static Future<Map<String, dynamic>> deleteHealthRecord({
+    required String petId,
+    required String recordId,
+  }) async {
+    try {
+      final headers = await _authHeaders();
+      await _dio.delete(
+        '/api/v1/pets/$petId/health/$recordId',
+        options: Options(headers: headers),
+      );
+      return {'success': true};
+    } on DioException catch (e) {
+      return {'success': false, 'message': e.response?.data['detail'] ?? 'Ошибка'};
+    }
   }
-}
 }

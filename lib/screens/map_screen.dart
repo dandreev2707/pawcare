@@ -19,8 +19,11 @@ class _MapScreenState extends State<MapScreen> {
   List<Map<String, dynamic>> _clinics = [];
   Point? _userLocation;
 
-  // Таганрог по умолчанию
   static const _defaultPoint = Point(latitude: 47.2085, longitude: 38.9371);
+
+  // Кеш — живёт между переходами на вкладку
+  static List<Map<String, dynamic>>? _cachedClinics;
+  static DateTime? _cachedAt;
 
   Future<Point> _getUserLocation() async {
     try {
@@ -61,7 +64,16 @@ class _MapScreenState extends State<MapScreen> {
     await _searchClinics(userPoint);
   }
 
-  Future<void> _searchClinics(Point center) async {
+  Future<void> _searchClinics(Point center, {bool forceRefresh = false}) async {
+    // Возвращаем кеш если он не старше 15 минут
+    if (!forceRefresh &&
+        _cachedClinics != null &&
+        _cachedAt != null &&
+        DateTime.now().difference(_cachedAt!) < const Duration(minutes: 15)) {
+      _applyClinics(_cachedClinics!);
+      return;
+    }
+
     setState(() => _isLoading = true);
 
     final result = await ApiService.getVets(
@@ -81,9 +93,14 @@ class _MapScreenState extends State<MapScreen> {
 
     final List data = result['data'];
     final clinics = data.map((e) => Map<String, dynamic>.from(e)).toList();
+    _cachedClinics = clinics;
+    _cachedAt = DateTime.now();
+    _applyClinics(clinics);
+  }
+
+  void _applyClinics(List<Map<String, dynamic>> clinics) {
     final objects = <MapObject>[];
 
-    // Маркер пользователя
     if (_userLocation != null) {
       objects.add(PlacemarkMapObject(
         mapId: const MapObjectId('user_location'),
@@ -96,7 +113,6 @@ class _MapScreenState extends State<MapScreen> {
       ));
     }
 
-    // Маркеры клиник
     for (var i = 0; i < clinics.length; i++) {
       final clinic = clinics[i];
       final idx = i;
@@ -128,7 +144,6 @@ class _MapScreenState extends State<MapScreen> {
   void _openRoute(Map<String, dynamic> clinic) async {
     final lat = clinic['lat'];
     final lon = clinic['lon'];
-    // Открываем маршрут через Яндекс.Навигатор или браузер
     final yandexUrl = Uri.parse(
         'yandexmaps://maps.yandex.ru/?rtext=~$lat,$lon&rtt=auto');
     final browserUrl = Uri.parse(
@@ -180,7 +195,6 @@ class _MapScreenState extends State<MapScreen> {
             const SizedBox(height: 8),
             _infoRow(Icons.access_time, clinic['hours'] ?? ''),
             const SizedBox(height: 20),
-            // Кнопка маршрута
             SizedBox(
               width: double.infinity,
               height: 48,
@@ -238,7 +252,7 @@ class _MapScreenState extends State<MapScreen> {
               onPressed: _isLoading
                   ? null
                   : () => _searchClinics(
-                      _userLocation ?? _defaultPoint),
+                      _userLocation ?? _defaultPoint, forceRefresh: true),
               icon: const Icon(Icons.refresh, color: Color(0xFF2C6E49)),
             ),
         ],
@@ -280,7 +294,6 @@ class _MapScreenState extends State<MapScreen> {
                   ),
                 ),
               ),
-            // Кнопка моего местоположения
             Positioned(
               right: 16,
               bottom: _clinics.isNotEmpty ? 140 : 16,
@@ -351,7 +364,6 @@ class _MapScreenState extends State<MapScreen> {
             ),
           ]),
         ),
-        // Карточки клиник снизу
         if (_clinics.isNotEmpty)
           SizedBox(
             height: 120,

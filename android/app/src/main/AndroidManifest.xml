@@ -11,7 +11,7 @@
         android:icon="@mipmap/ic_launcher">
         <meta-data
     android:name="com.yandex.android.maps.MAPKIT_API_KEY"
-    android:value="1ca7aeee-1cc2-43ca-96f7-81a6efa139d3"/>
+    android:value="cc93becc-d055-4e90-9b36-219d4609e902"/>
         <activity
             android:name=".MainActivity"
             android:exported="true"

@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import '../services/api_service.dart';
 
+
 class PetDetailScreen extends StatefulWidget {
   final Map<String, dynamic> pet;
 
@@ -15,7 +16,7 @@ class PetDetailScreen extends StatefulWidget {
 class _PetDetailScreenState extends State<PetDetailScreen> {
   late Map<String, dynamic> _pet;
   bool _uploadingPhoto = false;
-  static const String _baseUrl = 'http://192.168.86.27:8001';
+  int _photoVersion = 0;
 
   @override
   void initState() {
@@ -86,11 +87,14 @@ class _PetDetailScreenState extends State<PetDetailScreen> {
           filePath: img.path,
         );
           if (result['success']) {
-            setState(() {
-              // Добавляем timestamp чтобы сбросить кэш
-              _pet['photo_url'] = result['data']['photo_url'] + '?t=${DateTime.now().millisecondsSinceEpoch}';
-              _uploadingPhoto = false;
-            });
+          final newUrl = result['data']['photo_url'] as String;
+          imageCache.clear();
+          imageCache.clearLiveImages();
+          setState(() {
+            _pet['photo_url'] = newUrl;
+            _photoVersion++;
+            _uploadingPhoto = false;
+          });
         } else {
           setState(() => _uploadingPhoto = false);
         }
@@ -135,6 +139,19 @@ class _PetDetailScreenState extends State<PetDetailScreen> {
             ),
             actions: [
               IconButton(
+                icon: const Icon(Icons.edit_outlined, color: Colors.white),
+                onPressed: () async {
+                  final updated = await context.push<Map<String, dynamic>>(
+                    '/edit-pet',
+                    extra: _pet,
+                  );
+                  if (updated != null) {
+                    setState(() => _pet = Map<String, dynamic>.from(updated));
+                  }
+                },
+                tooltip: 'Редактировать',
+              ),
+              IconButton(
                 icon: _uploadingPhoto
                     ? const SizedBox(
                         width: 20, height: 20,
@@ -149,10 +166,15 @@ class _PetDetailScreenState extends State<PetDetailScreen> {
             flexibleSpace: FlexibleSpaceBar(
               background: _pet['photo_url'] != null
                   ? Image.network(
-                      '$_baseUrl${_pet['photo_url']}',
-                      key: ValueKey(_pet['photo_url']), // ← добавь эту строку
+                      _buildPhotoUrl(_pet['photo_url'] as String),
+                      key: ValueKey('${_pet['photo_url']}_$_photoVersion'),
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => _defaultAvatar(),
+                      loadingBuilder: (_, child, progress) =>
+                          progress == null ? child : _defaultAvatar(),
+                      errorBuilder: (_, error, __) {
+                        debugPrint('Фото не загружено: $error');
+                        return _defaultAvatar();
+                      },
                     )
                   : _defaultAvatar(),
             ),
@@ -207,6 +229,11 @@ class _PetDetailScreenState extends State<PetDetailScreen> {
         ],
       ),
     );
+  }
+
+  String _buildPhotoUrl(String? url) {
+    if (url == null) return '';
+    return url.startsWith('http') ? url : '${ApiService.baseUrl}$url';
   }
 
   Widget _defaultAvatar() => Container(

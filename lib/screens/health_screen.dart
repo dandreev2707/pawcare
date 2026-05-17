@@ -1,7 +1,9 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:open_file/open_file.dart';
 import '../services/api_service.dart';
-
 
 class HealthScreen extends StatefulWidget {
   final String petId;
@@ -20,11 +22,40 @@ class HealthScreen extends StatefulWidget {
 class _HealthScreenState extends State<HealthScreen> {
   List<dynamic> _records = [];
   bool _isLoading = true;
+  bool _isExporting = false;
 
   @override
   void initState() {
     super.initState();
     _loadRecords();
+  }
+
+  Future<void> _exportPdf() async {
+    setState(() => _isExporting = true);
+    final result = await ApiService.exportHealthPdf(widget.petId);
+    setState(() => _isExporting = false);
+
+    if (!mounted) return;
+
+    if (!result['success']) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(result['message'] ?? 'Ошибка экспорта')),
+      );
+      return;
+    }
+
+    try {
+      final dir = await getTemporaryDirectory();
+      final file = File('${dir.path}/health_${widget.petName}.pdf');
+      await file.writeAsBytes(result['bytes'] as List<int>);
+      await OpenFile.open(file.path);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Не удалось открыть PDF')),
+        );
+      }
+    }
   }
 
   Future<void> _loadRecords() async {
@@ -113,6 +144,17 @@ class _HealthScreenState extends State<HealthScreen> {
           ],
         ),
         actions: [
+          IconButton(
+            onPressed: _isExporting ? null : _exportPdf,
+            icon: _isExporting
+                ? const SizedBox(
+                    width: 20, height: 20,
+                    child: CircularProgressIndicator(
+                        strokeWidth: 2, color: Color(0xFF2C6E49)))
+                : const Icon(Icons.picture_as_pdf_outlined,
+                    color: Color(0xFF2C6E49)),
+            tooltip: 'Экспорт PDF',
+          ),
           IconButton(
             onPressed: () => context.push(
               '/weight/${widget.petId}/${Uri.encodeComponent(widget.petName)}',

@@ -188,7 +188,7 @@ Widget _buildPetCard(Map<String, dynamic> pet) {
             borderRadius: BorderRadius.circular(16),
             child: pet['photo_url'] != null
                 ? Image.network(
-                    'http://192.168.86.27:8001${pet['photo_url']}',
+                    '${ApiService.baseUrl}${pet['photo_url']}',
                     fit: BoxFit.cover,
                     errorBuilder: (_, __, ___) => const Icon(
                         Icons.pets,

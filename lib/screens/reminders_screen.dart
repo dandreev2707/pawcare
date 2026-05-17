@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 
@@ -11,11 +12,19 @@ class RemindersScreen extends StatefulWidget {
 class _RemindersScreenState extends State<RemindersScreen> {
   List<dynamic> _reminders = [];
   bool _isLoading = true;
+  final Map<String, Timer> _pendingDone = {};
+  final Map<String, Map<String, dynamic>> _pendingItems = {};
 
   @override
   void initState() {
     super.initState();
     _loadReminders();
+  }
+
+  @override
+  void dispose() {
+    for (final t in _pendingDone.values) t.cancel();
+    super.dispose();
   }
 
   Future<void> _loadReminders() async {
@@ -75,6 +84,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
     final titleController = TextEditingController();
     DateTime selectedDate = DateTime.now().add(const Duration(days: 1));
     TimeOfDay selectedTime = const TimeOfDay(hour: 10, minute: 0);
+    String? selectedRepeat;
 
     await showModalBottomSheet(
       context: context,
@@ -244,6 +254,34 @@ class _RemindersScreenState extends State<RemindersScreen> {
                     ]),
                   ),
                 ),
+                const SizedBox(height: 16),
+
+                // Повтор
+                const Text('Повтор',
+                    style: TextStyle(
+                        fontSize: 14, fontWeight: FontWeight.w600)),
+                const SizedBox(height: 8),
+                Container(
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF4FAF6),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFE0E0E0)),
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: DropdownButton<String?>(
+                    value: selectedRepeat,
+                    isExpanded: true,
+                    underline: const SizedBox(),
+                    items: const [
+                      DropdownMenuItem(value: null,       child: Text('Без повтора')),
+                      DropdownMenuItem(value: 'daily',    child: Text('Каждый день')),
+                      DropdownMenuItem(value: 'weekly',   child: Text('Каждую неделю')),
+                      DropdownMenuItem(value: 'monthly',  child: Text('Каждый месяц')),
+                      DropdownMenuItem(value: 'yearly',   child: Text('Каждый год')),
+                    ],
+                    onChanged: (v) => setModalState(() => selectedRepeat = v),
+                  ),
+                ),
                 const SizedBox(height: 24),
 
                 SizedBox(
@@ -257,6 +295,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
                         petId: selectedPetId!,
                         title: titleController.text.trim(),
                         remindAt: selectedDate.toIso8601String(),
+                        repeatRule: selectedRepeat,
                       );
                       _loadReminders();
                     },
@@ -280,11 +319,18 @@ class _RemindersScreenState extends State<RemindersScreen> {
     );
   }
 
+  int _calendarDays(String dateStr) {
+    final d = DateTime.parse(dateStr);
+    final now = DateTime.now();
+    final dDay = DateTime(d.year, d.month, d.day);
+    final today = DateTime(now.year, now.month, now.day);
+    return dDay.difference(today).inDays;
+  }
+
   Color _getUrgencyColor(String? date) {
     if (date == null) return const Color(0xFF888888);
     try {
-      final d = DateTime.parse(date);
-      final days = d.difference(DateTime.now()).inDays;
+      final days = _calendarDays(date);
       if (days < 0) return Colors.red;
       if (days <= 7) return const Color(0xFFE65100);
       if (days <= 30) return const Color(0xFFF9A825);
@@ -297,8 +343,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
   String _getDaysText(String? date) {
     if (date == null) return '';
     try {
-      final d = DateTime.parse(date);
-      final days = d.difference(DateTime.now()).inDays;
+      final days = _calendarDays(date);
       if (days < 0) return 'Просрочено на ${days.abs()} дн.';
       if (days == 0) return 'Сегодня!';
       if (days == 1) return 'Завтра';
@@ -433,85 +478,178 @@ class _RemindersScreenState extends State<RemindersScreen> {
     );
   }
 
+  void _completeReminder(Map<String, dynamic> reminder) {
+    final id = reminder['id'] as String?;
+    final key = id ?? '${reminder['title']}_${reminder['remind_at']}';
+
+    setState(() => _reminders.remove(reminder));
+
+    _pendingDone[key]?.cancel();
+    _pendingItems[key] = reminder;
+
+    _pendingDone[key] = Timer(const Duration(seconds: 4), () async {
+      _pendingDone.remove(key);
+      _pendingItems.remove(key);
+      if (id != null) await ApiService.completeReminder(id);
+    });
+
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('Отмечено как выполненное'),
+        backgroundColor: const Color(0xFF2C6E49),
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 4),
+        action: SnackBarAction(
+          label: 'Отмена',
+          textColor: Colors.white,
+          onPressed: () {
+            _pendingDone[key]?.cancel();
+            _pendingDone.remove(key);
+            final item = _pendingItems.remove(key);
+            if (item != null && mounted) {
+              setState(() {
+                _reminders.add(item);
+                _reminders.sort((a, b) =>
+                    (a['remind_at'] ?? '').compareTo(b['remind_at'] ?? ''));
+              });
+            }
+          },
+        ),
+      ),
+    );
+  }
+
   Widget _buildCard(Map<String, dynamic> reminder) {
     final info = _getTypeInfo(reminder['record_type'] ?? 'custom');
     final urgencyColor = _getUrgencyColor(reminder['remind_at']);
     final daysText = _getDaysText(reminder['remind_at']);
     final isCustom = reminder['source'] == 'custom';
     final id = reminder['id'] as String?;
+    final repeatRule = reminder['repeat_rule'] as String?;
+    final repeatLabel = const {
+      'daily':   'Каждый день',
+      'weekly':  'Каждую нед.',
+      'monthly': 'Каждый мес.',
+      'yearly':  'Каждый год',
+    }[repeatRule];
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          )
-        ],
+    return Dismissible(
+      key: ValueKey(reminder['id'] ?? reminder['title'] ?? UniqueKey()),
+      direction: DismissDirection.startToEnd,
+      background: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        decoration: BoxDecoration(
+          color: const Color(0xFF2C6E49),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        alignment: Alignment.centerLeft,
+        padding: const EdgeInsets.only(left: 24),
+        child: const Row(
+          children: [
+            Icon(Icons.check_circle_outline, color: Colors.white, size: 28),
+            SizedBox(width: 8),
+            Text('Выполнено',
+                style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 15)),
+          ],
+        ),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(children: [
-          Container(
-            width: 48, height: 48,
-            decoration: BoxDecoration(
-              color: info['bg'],
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(info['icon'], color: info['color'], size: 24),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(reminder['title'] ?? '',
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 15,
-                        color: Color(0xFF1B1B1B))),
-                const SizedBox(height: 2),
-                Text('🐾 ${reminder['pet_name'] ?? ''}',
-                    style: const TextStyle(
-                        color: Color(0xFF666666), fontSize: 13)),
-                const SizedBox(height: 2),
-                Text(_formatDateTime(reminder['remind_at']),
-                    style: const TextStyle(
-                        color: Color(0xFF888888), fontSize: 12)),
-              ],
-            ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: urgencyColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Text(daysText,
-                    style: TextStyle(
-                        color: urgencyColor,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600)),
+      confirmDismiss: (_) async {
+        _completeReminder(reminder);
+        return false;
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
+            )
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(children: [
+            Container(
+              width: 48, height: 48,
+              decoration: BoxDecoration(
+                color: info['bg'],
+                borderRadius: BorderRadius.circular(12),
               ),
-              if (isCustom && id != null) ...[
-                const SizedBox(height: 8),
-                GestureDetector(
-                  onTap: () => _deleteReminder(id),
-                  child: const Icon(Icons.delete_outline,
-                      color: Colors.red, size: 20),
+              child: Icon(info['icon'], color: info['color'], size: 24),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(reminder['title'] ?? '',
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                          color: Color(0xFF1B1B1B))),
+                  const SizedBox(height: 2),
+                  Text('🐾 ${reminder['pet_name'] ?? ''}',
+                      style: const TextStyle(
+                          color: Color(0xFF666666), fontSize: 13)),
+                  const SizedBox(height: 2),
+                  Text(_formatDateTime(reminder['remind_at']),
+                      style: const TextStyle(
+                          color: Color(0xFF888888), fontSize: 12)),
+                ],
+              ),
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: urgencyColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(daysText,
+                      style: TextStyle(
+                          color: urgencyColor,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600)),
                 ),
+                if (repeatLabel != null) ...[
+                  const SizedBox(height: 4),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.repeat, size: 12, color: Color(0xFF2C6E49)),
+                      const SizedBox(width: 3),
+                      Text(repeatLabel,
+                          style: const TextStyle(
+                              color: Color(0xFF2C6E49),
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500)),
+                    ],
+                  ),
+                ],
+                if (isCustom && id != null) ...[
+                  const SizedBox(height: 8),
+                  GestureDetector(
+                    onTap: () => _deleteReminder(id),
+                    child: const Icon(Icons.delete_outline,
+                        color: Colors.red, size: 20),
+                  ),
+                ],
               ],
-            ],
-          ),
-        ]),
+            ),
+          ]),
+        ),
       ),
     );
   }
