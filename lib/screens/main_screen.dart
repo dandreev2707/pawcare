@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import '../theme/app_colors.dart';
 import 'home_screen.dart';
 import 'reminders_screen.dart';
 import 'map_screen.dart';
@@ -28,7 +28,7 @@ class _MainScreenState extends State<MainScreen> {
       body: _screens[_currentIndex],
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.card(context),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.08),
@@ -39,14 +39,12 @@ class _MainScreenState extends State<MainScreen> {
         ),
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(
-                horizontal: 8, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 _navItem(0, Icons.pets, 'Питомцы'),
-                _navItem(1, Icons.notifications_outlined,
-                    'Напоминания'),
+                _navItem(1, Icons.notifications_outlined, 'Напоминания'),
                 _navItem(2, Icons.map_outlined, 'Карта'),
                 _navItem(3, Icons.person_outline, 'Профиль'),
               ],
@@ -62,11 +60,10 @@ class _MainScreenState extends State<MainScreen> {
     return GestureDetector(
       onTap: () => setState(() => _currentIndex = index),
       child: Container(
-        padding: const EdgeInsets.symmetric(
-            horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
           color: isActive
-              ? const Color(0xFF2C6E49).withOpacity(0.1)
+              ? AppColors.primary.withOpacity(0.1)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
         ),
@@ -75,9 +72,7 @@ class _MainScreenState extends State<MainScreen> {
           children: [
             Icon(
               icon,
-              color: isActive
-                  ? const Color(0xFF2C6E49)
-                  : const Color(0xFF888888),
+              color: isActive ? AppColors.primary : AppColors.textSecondary(context),
               size: 24,
             ),
             const SizedBox(height: 4),
@@ -85,12 +80,8 @@ class _MainScreenState extends State<MainScreen> {
               label,
               style: TextStyle(
                 fontSize: 11,
-                fontWeight: isActive
-                    ? FontWeight.w600
-                    : FontWeight.normal,
-                color: isActive
-                    ? const Color(0xFF2C6E49)
-                    : const Color(0xFF888888),
+                fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
+                color: isActive ? AppColors.primary : AppColors.textSecondary(context),
               ),
             ),
           ],

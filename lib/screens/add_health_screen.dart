@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../services/api_service.dart';
+import '../theme/app_colors.dart';
 
 class AddHealthScreen extends StatefulWidget {
   final String petId;
@@ -20,26 +21,12 @@ class _AddHealthScreenState extends State<AddHealthScreen> {
   bool _isLoading = false;
 
   final List<Map<String, dynamic>> _types = [
-    {
-      'value': 'vaccination',
-      'label': 'Вакцинация',
-      'icon': Icons.vaccines
-    },
-    {
-      'value': 'deworming',
-      'label': 'Дегельминтизация',
-      'icon': Icons.medication
-    },
-    {
-      'value': 'antiparasitic',
-      'label': 'От паразитов',
-      'icon': Icons.bug_report
-    },
-    {
-      'value': 'vet_visit',
-      'label': 'Визит к ветеринару',
-      'icon': Icons.local_hospital
-    },
+    {'value': 'vaccination',     'label': 'Вакцинация',              'icon': Icons.vaccines},
+    {'value': 'deworming',       'label': 'Дегельминтизация',        'icon': Icons.medication},
+    {'value': 'antiparasitic',   'label': 'От паразитов',            'icon': Icons.bug_report},
+    {'value': 'vet_visit',       'label': 'Визит к ветеринару',      'icon': Icons.local_hospital},
+    {'value': 'chronic_disease', 'label': 'Хроническое заболевание', 'icon': Icons.monitor_heart_outlined},
+    {'value': 'medication',      'label': 'Медикамент',              'icon': Icons.local_pharmacy_outlined},
   ];
 
   @override
@@ -57,20 +44,14 @@ class _AddHealthScreenState extends State<AddHealthScreen> {
       lastDate: DateTime(2030),
       builder: (ctx, child) => Theme(
         data: Theme.of(ctx).copyWith(
-          colorScheme: const ColorScheme.light(
-            primary: Color(0xFF2C6E49),
-          ),
+          colorScheme: const ColorScheme.light(primary: AppColors.primary),
         ),
         child: child!,
       ),
     );
     if (date != null) {
       setState(() {
-        if (isNext) {
-          _nextDate = date;
-        } else {
-          _recordDate = date;
-        }
+        if (isNext) _nextDate = date; else _recordDate = date;
       });
     }
   }
@@ -80,8 +61,7 @@ class _AddHealthScreenState extends State<AddHealthScreen> {
     return '${date.day.toString().padLeft(2, '0')}.${date.month.toString().padLeft(2, '0')}.${date.year}';
   }
 
-  String _toIso(DateTime date) =>
-      date.toIso8601String().split('T')[0];
+  String _toIso(DateTime date) => date.toIso8601String().split('T')[0];
 
   Future<void> _save() async {
     if (_titleController.text.isEmpty) {
@@ -126,18 +106,17 @@ class _AddHealthScreenState extends State<AddHealthScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4FAF6),
+      backgroundColor: AppColors.bg(context),
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF4FAF6),
+        backgroundColor: AppColors.bg(context),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios,
-              color: Color(0xFF1B1B1B)),
+          icon: Icon(Icons.arrow_back_ios, color: AppColors.textPrimary(context)),
           onPressed: () => context.pop(),
         ),
-        title: const Text('Новая запись',
+        title: Text('Новая запись',
             style: TextStyle(
-                color: Color(0xFF1B1B1B),
+                color: AppColors.textPrimary(context),
                 fontWeight: FontWeight.bold)),
       ),
       body: SingleChildScrollView(
@@ -147,7 +126,6 @@ class _AddHealthScreenState extends State<AddHealthScreen> {
           children: [
             _label('Тип записи'),
             const SizedBox(height: 12),
-            // Выбор типа
             GridView.count(
               crossAxisCount: 2,
               shrinkWrap: true,
@@ -158,18 +136,13 @@ class _AddHealthScreenState extends State<AddHealthScreen> {
               children: _types.map((t) {
                 final selected = _selectedType == t['value'];
                 return GestureDetector(
-                  onTap: () =>
-                      setState(() => _selectedType = t['value']),
+                  onTap: () => setState(() => _selectedType = t['value']),
                   child: Container(
                     decoration: BoxDecoration(
-                      color: selected
-                          ? const Color(0xFF2C6E49)
-                          : Colors.white,
+                      color: selected ? AppColors.primary : AppColors.inputFill(context),
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(
-                        color: selected
-                            ? const Color(0xFF2C6E49)
-                            : const Color(0xFFE0E0E0),
+                        color: selected ? AppColors.primary : AppColors.border(context),
                       ),
                     ),
                     child: Row(
@@ -177,9 +150,7 @@ class _AddHealthScreenState extends State<AddHealthScreen> {
                       children: [
                         Icon(t['icon'],
                             size: 18,
-                            color: selected
-                                ? Colors.white
-                                : const Color(0xFF666666)),
+                            color: selected ? Colors.white : AppColors.textSecondary(context)),
                         const SizedBox(width: 6),
                         Flexible(
                           child: Text(
@@ -187,9 +158,7 @@ class _AddHealthScreenState extends State<AddHealthScreen> {
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
-                              color: selected
-                                  ? Colors.white
-                                  : const Color(0xFF666666),
+                              color: selected ? Colors.white : AppColors.textSecondary(context),
                             ),
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -203,24 +172,11 @@ class _AddHealthScreenState extends State<AddHealthScreen> {
             const SizedBox(height: 24),
             _label('Название *'),
             const SizedBox(height: 8),
-            TextField(
-              controller: _titleController,
-              decoration: _inputDecoration(
-                'Например: Комплексная вакцина',
-                Icons.title,
-              ),
-            ),
+            _textField(_titleController, 'Например: Комплексная вакцина', Icons.title),
             const SizedBox(height: 20),
             _label('Описание'),
             const SizedBox(height: 8),
-            TextField(
-              controller: _descController,
-              maxLines: 3,
-              decoration: _inputDecoration(
-                'Препарат, доза, врач...',
-                Icons.description_outlined,
-              ),
-            ),
+            _textField(_descController, 'Препарат, доза, врач...', Icons.description_outlined, maxLines: 3),
             const SizedBox(height: 20),
             _label('Дата процедуры *'),
             const SizedBox(height: 8),
@@ -236,26 +192,18 @@ class _AddHealthScreenState extends State<AddHealthScreen> {
               child: ElevatedButton(
                 onPressed: _isLoading ? null : _save,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF2C6E49),
+                  backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   elevation: 0,
                 ),
                 child: _isLoading
                     ? const SizedBox(
                         width: 24,
                         height: 24,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2.5,
-                        ),
-                      )
+                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
                     : const Text('Сохранить',
-                        style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600)),
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
               ),
             ),
           ],
@@ -265,56 +213,53 @@ class _AddHealthScreenState extends State<AddHealthScreen> {
   }
 
   Widget _label(String text) => Text(text,
-      style: const TextStyle(
+      style: TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w600,
-          color: Color(0xFF1B1B1B)));
+          color: AppColors.textPrimary(context)));
 
-  InputDecoration _inputDecoration(String hint, IconData icon) =>
-      InputDecoration(
-        hintText: hint,
-        hintStyle: const TextStyle(color: Color(0xFFAAAAAA)),
-        prefixIcon: Icon(icon, color: const Color(0xFF2C6E49)),
-        filled: true,
-        fillColor: Colors.white,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide:
-              const BorderSide(color: Color(0xFF2C6E49), width: 2),
+  Widget _textField(TextEditingController ctrl, String hint, IconData icon, {int maxLines = 1}) =>
+      TextField(
+        controller: ctrl,
+        maxLines: maxLines,
+        style: TextStyle(color: AppColors.textPrimary(context)),
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: TextStyle(color: AppColors.textSecondary(context)),
+          prefixIcon: Icon(icon, color: AppColors.primary),
+          filled: true,
+          fillColor: AppColors.inputFill(context),
+          border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+          enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: AppColors.border(context))),
+          focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: AppColors.primary, width: 2)),
         ),
       );
 
-  Widget _datePicker(DateTime? date, bool isNext) =>
-      GestureDetector(
+  Widget _datePicker(DateTime? date, bool isNext) => GestureDetector(
         onTap: () => _pickDate(isNext),
         child: Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(
-              horizontal: 16, vertical: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppColors.inputFill(context),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFFE0E0E0)),
+            border: Border.all(color: AppColors.border(context)),
           ),
           child: Row(
             children: [
-              const Icon(Icons.calendar_today_outlined,
-                  color: Color(0xFF2C6E49)),
+              const Icon(Icons.calendar_today_outlined, color: AppColors.primary),
               const SizedBox(width: 12),
               Text(
                 _formatDate(date),
                 style: TextStyle(
                   color: date == null
-                      ? const Color(0xFFAAAAAA)
-                      : const Color(0xFF1B1B1B),
+                      ? AppColors.textSecondary(context)
+                      : AppColors.textPrimary(context),
                   fontSize: 15,
                 ),
               ),

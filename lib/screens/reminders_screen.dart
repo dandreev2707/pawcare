@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import '../services/notification_service.dart';
+import '../theme/app_colors.dart';
 
 class RemindersScreen extends StatefulWidget {
   const RemindersScreen({super.key});
@@ -89,7 +91,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
     await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.card(context),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -104,21 +106,23 @@ class _RemindersScreenState extends State<RemindersScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Новое напоминание',
+                Text('Новое напоминание',
                     style: TextStyle(
-                        fontSize: 20, fontWeight: FontWeight.bold)),
+                        fontSize: 20, fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimary(ctx))),
                 const SizedBox(height: 20),
 
                 // Выбор питомца
-                const Text('Питомец',
+                Text('Питомец',
                     style: TextStyle(
-                        fontSize: 14, fontWeight: FontWeight.w600)),
+                        fontSize: 14, fontWeight: FontWeight.w600,
+                        color: AppColors.textPrimary(ctx))),
                 const SizedBox(height: 8),
                 Container(
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF4FAF6),
+                    color: AppColors.inputFill(context),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFFE0E0E0)),
+                    border: Border.all(color: AppColors.border(context)),
                   ),
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   child: DropdownButton<String>(
@@ -135,9 +139,10 @@ class _RemindersScreenState extends State<RemindersScreen> {
                 const SizedBox(height: 16),
 
                 // Название
-                const Text('Название',
+                Text('Название',
                     style: TextStyle(
-                        fontSize: 14, fontWeight: FontWeight.w600)),
+                        fontSize: 14, fontWeight: FontWeight.w600,
+                        color: AppColors.textPrimary(ctx))),
                 const SizedBox(height: 8),
                 TextField(
                   controller: titleController,
@@ -145,7 +150,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
                     hintText: 'Например: Прививка от бешенства',
                     hintStyle: const TextStyle(color: Color(0xFFAAAAAA)),
                     filled: true,
-                    fillColor: const Color(0xFFF4FAF6),
+                    fillColor: AppColors.inputFill(context),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide.none,
@@ -160,9 +165,10 @@ class _RemindersScreenState extends State<RemindersScreen> {
                 const SizedBox(height: 16),
 
                 // Дата
-                const Text('Дата',
+                Text('Дата',
                     style: TextStyle(
-                        fontSize: 14, fontWeight: FontWeight.w600)),
+                        fontSize: 14, fontWeight: FontWeight.w600,
+                        color: AppColors.textPrimary(ctx))),
                 const SizedBox(height: 8),
                 GestureDetector(
                   onTap: () async {
@@ -190,9 +196,9 @@ class _RemindersScreenState extends State<RemindersScreen> {
                     width: double.infinity,
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF4FAF6),
+                      color: AppColors.inputFill(ctx),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFFE0E0E0)),
+                      border: Border.all(color: AppColors.border(ctx)),
                     ),
                     child: Row(children: [
                       const Icon(Icons.calendar_today,
@@ -200,7 +206,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
                       const SizedBox(width: 8),
                       Text(
                         '${selectedDate.day.toString().padLeft(2, '0')}.${selectedDate.month.toString().padLeft(2, '0')}.${selectedDate.year}',
-                        style: const TextStyle(fontSize: 15),
+                        style: TextStyle(fontSize: 15, color: AppColors.textPrimary(ctx)),
                       ),
                     ]),
                   ),
@@ -208,21 +214,25 @@ class _RemindersScreenState extends State<RemindersScreen> {
                 const SizedBox(height: 16),
 
                 // Время
-                const Text('Время',
+                Text('Время',
                     style: TextStyle(
-                        fontSize: 14, fontWeight: FontWeight.w600)),
+                        fontSize: 14, fontWeight: FontWeight.w600,
+                        color: AppColors.textPrimary(ctx))),
                 const SizedBox(height: 8),
                 GestureDetector(
                   onTap: () async {
                     final time = await showTimePicker(
                       context: ctx,
                       initialTime: selectedTime,
-                      builder: (c, child) => Theme(
-                        data: Theme.of(c).copyWith(
-                          colorScheme: const ColorScheme.light(
-                              primary: Color(0xFF2C6E49)),
+                      builder: (c, child) => MediaQuery(
+                        data: MediaQuery.of(c).copyWith(alwaysUse24HourFormat: true),
+                        child: Theme(
+                          data: Theme.of(c).copyWith(
+                            colorScheme: const ColorScheme.light(
+                                primary: Color(0xFF2C6E49)),
+                          ),
+                          child: child!,
                         ),
-                        child: child!,
                       ),
                     );
                     if (time != null) {
@@ -239,9 +249,9 @@ class _RemindersScreenState extends State<RemindersScreen> {
                     width: double.infinity,
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF4FAF6),
+                      color: AppColors.inputFill(ctx),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFFE0E0E0)),
+                      border: Border.all(color: AppColors.border(ctx)),
                     ),
                     child: Row(children: [
                       const Icon(Icons.access_time,
@@ -249,7 +259,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
                       const SizedBox(width: 8),
                       Text(
                         '${selectedTime.hour.toString().padLeft(2, '0')}:${selectedTime.minute.toString().padLeft(2, '0')}',
-                        style: const TextStyle(fontSize: 15),
+                        style: TextStyle(fontSize: 15, color: AppColors.textPrimary(ctx)),
                       ),
                     ]),
                   ),
@@ -257,15 +267,16 @@ class _RemindersScreenState extends State<RemindersScreen> {
                 const SizedBox(height: 16),
 
                 // Повтор
-                const Text('Повтор',
+                Text('Повтор',
                     style: TextStyle(
-                        fontSize: 14, fontWeight: FontWeight.w600)),
+                        fontSize: 14, fontWeight: FontWeight.w600,
+                        color: AppColors.textPrimary(ctx))),
                 const SizedBox(height: 8),
                 Container(
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF4FAF6),
+                    color: AppColors.inputFill(context),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFFE0E0E0)),
+                    border: Border.all(color: AppColors.border(context)),
                   ),
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   child: DropdownButton<String?>(
@@ -291,12 +302,27 @@ class _RemindersScreenState extends State<RemindersScreen> {
                     onPressed: () async {
                       if (titleController.text.isEmpty) return;
                       Navigator.pop(ctx);
-                      await ApiService.createReminder(
+                      final result = await ApiService.createReminder(
                         petId: selectedPetId!,
                         title: titleController.text.trim(),
-                        remindAt: selectedDate.toIso8601String(),
+                        remindAt: selectedDate.toUtc().toIso8601String(),
                         repeatRule: selectedRepeat,
                       );
+                      if (result['success'] == true) {
+                        final remId = result['data']?['id'] as String?;
+                        final petName = pets.firstWhere(
+                          (p) => p['id'] == selectedPetId,
+                          orElse: () => {'name': 'Питомец'},
+                        )['name'] as String;
+                        if (remId != null) {
+                          await NotificationService.scheduleReminder(
+                            id: NotificationService.idFromReminderId(remId),
+                            title: titleController.text.trim(),
+                            petName: petName,
+                            scheduledAt: selectedDate,
+                          );
+                        }
+                      }
                       _loadReminders();
                     },
                     style: ElevatedButton.styleFrom(
@@ -356,7 +382,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
   String _formatDateTime(String? dateStr) {
     if (dateStr == null) return '';
     try {
-      final d = DateTime.parse(dateStr);
+      final d = DateTime.parse(dateStr).toLocal();
       return '${d.day.toString().padLeft(2, '0')}.${d.month.toString().padLeft(2, '0')}.${d.year} ${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
     } catch (_) {
       return dateStr;
@@ -383,7 +409,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4FAF6),
+      backgroundColor: AppColors.bg(context),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -393,17 +419,17 @@ class _RemindersScreenState extends State<RemindersScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Column(
+                  Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text('Напоминания',
                           style: TextStyle(
                               fontSize: 26,
                               fontWeight: FontWeight.bold,
-                              color: Color(0xFF1B1B1B))),
+                              color: AppColors.textPrimary(context))),
                       Text('Предстоящие процедуры',
                           style: TextStyle(
-                              fontSize: 14, color: Color(0xFF666666))),
+                              fontSize: 14, color: AppColors.textSecondary(context))),
                     ],
                   ),
                   // Кнопка добавить
@@ -461,17 +487,17 @@ class _RemindersScreenState extends State<RemindersScreen> {
                 size: 50, color: Color(0xFF2C6E49)),
           ),
           const SizedBox(height: 20),
-          const Text('Напоминаний нет',
+          Text('Напоминаний нет',
               style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF1B1B1B))),
+                  color: AppColors.textPrimary(context))),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             'Нажмите + чтобы добавить напоминание\nили добавьте медицинские записи с датой',
             textAlign: TextAlign.center,
             style: TextStyle(
-                fontSize: 14, color: Color(0xFF666666), height: 1.5),
+                fontSize: 14, color: AppColors.textSecondary(context), height: 1.5),
           ),
         ],
       ),
@@ -565,7 +591,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.card(context),
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
@@ -592,18 +618,18 @@ class _RemindersScreenState extends State<RemindersScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(reminder['title'] ?? '',
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 15,
-                          color: Color(0xFF1B1B1B))),
+                          color: AppColors.textPrimary(context))),
                   const SizedBox(height: 2),
                   Text('🐾 ${reminder['pet_name'] ?? ''}',
-                      style: const TextStyle(
-                          color: Color(0xFF666666), fontSize: 13)),
+                      style: TextStyle(
+                          color: AppColors.textSecondary(context), fontSize: 13)),
                   const SizedBox(height: 2),
                   Text(_formatDateTime(reminder['remind_at']),
-                      style: const TextStyle(
-                          color: Color(0xFF888888), fontSize: 12)),
+                      style: TextStyle(
+                          color: AppColors.textSecondary(context), fontSize: 12)),
                 ],
               ),
             ),

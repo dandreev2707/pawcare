@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:open_file/open_file.dart';
 import '../services/api_service.dart';
+import '../theme/app_colors.dart';
 
 class HealthScreen extends StatefulWidget {
   final String petId;
@@ -101,6 +102,20 @@ class _HealthScreenState extends State<HealthScreen> {
           'bg': const Color(0xFFFFEBEE),
           'label': 'Визит к ветеринару',
         };
+      case 'chronic_disease':
+        return {
+          'icon': Icons.monitor_heart_outlined,
+          'color': const Color(0xFFE65100),
+          'bg': const Color(0xFFFFF3E0),
+          'label': 'Хроническое заболевание',
+        };
+      case 'medication':
+        return {
+          'icon': Icons.local_pharmacy_outlined,
+          'color': const Color(0xFF00838F),
+          'bg': const Color(0xFFE0F7FA),
+          'label': 'Медикамент',
+        };
       default:
         return {
           'icon': Icons.note,
@@ -114,13 +129,12 @@ class _HealthScreenState extends State<HealthScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4FAF6),
+      backgroundColor: AppColors.bg(context),
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF4FAF6),
+        backgroundColor: AppColors.bg(context),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios,
-              color: Color(0xFF1B1B1B)),
+          icon: Icon(Icons.arrow_back_ios, color: AppColors.textPrimary(context)),
           onPressed: () => context.pop(),
         ),
         title: Column(
@@ -128,16 +142,16 @@ class _HealthScreenState extends State<HealthScreen> {
           children: [
             Text(
               widget.petName,
-              style: const TextStyle(
-                color: Color(0xFF1B1B1B),
+              style: TextStyle(
+                color: AppColors.textPrimary(context),
                 fontWeight: FontWeight.bold,
                 fontSize: 18,
               ),
             ),
-            const Text(
+            Text(
               'Медицинский журнал',
               style: TextStyle(
-                color: Color(0xFF666666),
+                color: AppColors.textSecondary(context),
                 fontSize: 12,
               ),
             ),
@@ -220,21 +234,21 @@ class _HealthScreenState extends State<HealthScreen> {
             ),
           ),
           const SizedBox(height: 20),
-          const Text(
+          Text(
             'Записей пока нет',
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF1B1B1B),
+              color: AppColors.textPrimary(context),
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             'Добавьте первую запись\nо здоровье питомца',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 14,
-              color: Color(0xFF666666),
+              color: AppColors.textSecondary(context),
               height: 1.5,
             ),
           ),
@@ -300,7 +314,7 @@ class _HealthScreenState extends State<HealthScreen> {
     child: Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.card(context),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -351,16 +365,16 @@ class _HealthScreenState extends State<HealthScreen> {
                   ),
                   const SizedBox(height: 6),
                   Text(record['title'],
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 15,
-                          color: Color(0xFF1B1B1B))),
+                          color: AppColors.textPrimary(context))),
                   if (record['description'] != null &&
                       record['description'].toString().isNotEmpty) ...[
                     const SizedBox(height: 4),
                     Text(record['description'],
-                        style: const TextStyle(
-                            color: Color(0xFF666666), fontSize: 13)),
+                        style: TextStyle(
+                            color: AppColors.textSecondary(context), fontSize: 13)),
                   ],
                   if (record['next_date'] != null &&
                       record['next_date'].toString().isNotEmpty) ...[

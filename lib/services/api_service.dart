@@ -104,6 +104,17 @@ class ApiService {
   }
 
   // ПИТОМЦЫ
+  static Future<Map<String, dynamic>> getDashboardStats() async {
+    try {
+      final headers = await _authHeaders();
+      final response = await _dio.get('/api/v1/dashboard/stats',
+          options: Options(headers: headers));
+      return {'success': true, 'data': response.data};
+    } on DioException {
+      return {'success': false};
+    }
+  }
+
   static Future<Map<String, dynamic>> getPets() async {
     try {
       final headers = await _authHeaders();
@@ -320,15 +331,80 @@ class ApiService {
     }
   }
 
+  // ТЕЧКИ
+  static Future<Map<String, dynamic>> getHeatCycles(String petId) async {
+    try {
+      final headers = await _authHeaders();
+      final response = await _dio.get('/api/v1/pets/$petId/heat-cycles',
+          options: Options(headers: headers));
+      return {'success': true, 'data': response.data};
+    } on DioException catch (e) {
+      return {'success': false, 'message': e.response?.data['detail'] ?? 'Ошибка'};
+    }
+  }
+
+  static Future<Map<String, dynamic>> addHeatCycle({
+    required String petId,
+    required String startedAt,
+    String? notes,
+  }) async {
+    try {
+      final headers = await _authHeaders();
+      final response = await _dio.post('/api/v1/pets/$petId/heat-cycles',
+          data: {'started_at': startedAt, if (notes != null) 'notes': notes},
+          options: Options(headers: headers));
+      return {'success': true, 'data': response.data};
+    } on DioException catch (e) {
+      return {'success': false, 'message': e.response?.data['detail'] ?? 'Ошибка'};
+    }
+  }
+
+  static Future<Map<String, dynamic>> updateHeatCycle({
+    required String petId,
+    required String cycleId,
+    String? startedAt,
+    String? endedAt,
+    String? notes,
+  }) async {
+    try {
+      final headers = await _authHeaders();
+      final response = await _dio.put('/api/v1/pets/$petId/heat-cycles/$cycleId',
+          data: {
+            if (startedAt != null) 'started_at': startedAt,
+            if (endedAt != null) 'ended_at': endedAt,
+            if (notes != null) 'notes': notes,
+          },
+          options: Options(headers: headers));
+      return {'success': true, 'data': response.data};
+    } on DioException catch (e) {
+      return {'success': false, 'message': e.response?.data['detail'] ?? 'Ошибка'};
+    }
+  }
+
+  static Future<Map<String, dynamic>> deleteHeatCycle({
+    required String petId,
+    required String cycleId,
+  }) async {
+    try {
+      final headers = await _authHeaders();
+      await _dio.delete('/api/v1/pets/$petId/heat-cycles/$cycleId',
+          options: Options(headers: headers));
+      return {'success': true};
+    } on DioException catch (e) {
+      return {'success': false, 'message': e.response?.data['detail'] ?? 'Ошибка'};
+    }
+  }
+
   // КАРТА
   static Future<Map<String, dynamic>> getVets({
     required double lat,
     required double lon,
+    String placeType = 'vets',
   }) async {
     try {
       final headers = await _authHeaders();
       final response = await _dio.get('/api/v1/map/vets',
-          queryParameters: {'lat': lat, 'lon': lon},
+          queryParameters: {'lat': lat, 'lon': lon, 'place_type': placeType},
           options: Options(headers: headers));
       return {'success': true, 'data': response.data};
     } on DioException catch (e) {

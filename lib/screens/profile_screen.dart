@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import '../services/api_service.dart';
+import '../main.dart' show themeNotifier, saveThemePreference;
+import '../theme/app_colors.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -80,18 +82,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4FAF6),
+      backgroundColor: AppColors.bg(context),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Профиль',
+              Text('Профиль',
                   style: TextStyle(
                       fontSize: 26,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF1B1B1B))),
+                      color: AppColors.textPrimary(context))),
               const SizedBox(height: 24),
 
               // Аватар
@@ -110,18 +112,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const SizedBox(height: 32),
 
               // Telegram секция
-              const Text('Telegram',
+              Text('Telegram',
                   style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF1B1B1B))),
+                      color: AppColors.textPrimary(context))),
               const SizedBox(height: 12),
 
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: AppColors.card(context),
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
@@ -138,6 +140,38 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     : _tgLinked
                         ? _buildLinkedState()
                         : _buildUnlinkedState(),
+              ),
+              const SizedBox(height: 32),
+
+              // Тёмная тема
+              const Text('Оформление',
+                  style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold)),
+              const SizedBox(height: 12),
+              ValueListenableBuilder<ThemeMode>(
+                valueListenable: themeNotifier,
+                builder: (_, mode, __) => Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).cardColor,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      )
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      _themeOption('Системная', ThemeMode.system, Icons.brightness_auto, mode),
+                      _themeOption('Светлая', ThemeMode.light, Icons.light_mode_outlined, mode),
+                      _themeOption('Тёмная', ThemeMode.dark, Icons.dark_mode_outlined, mode),
+                    ],
+                  ),
+                ),
               ),
               const SizedBox(height: 32),
 
@@ -170,52 +204,60 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  Widget _themeOption(String label, ThemeMode mode, IconData icon, ThemeMode current) {
+    final selected = current == mode;
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      leading: Icon(icon,
+          color: selected ? const Color(0xFF2C6E49) : null),
+      title: Text(label),
+      trailing: selected
+          ? const Icon(Icons.check, color: Color(0xFF2C6E49))
+          : null,
+      onTap: () async {
+        themeNotifier.value = mode;
+        await saveThemePreference(mode);
+      },
+    );
+  }
+
   Widget _buildLinkedState() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(children: [
           Container(
-            width: 40,
-            height: 40,
+            width: 40, height: 40,
             decoration: BoxDecoration(
-              color: const Color(0xFF2AABEE).withOpacity(0.1),
+              color: const Color(0xFF2AABEE).withOpacity(0.15),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: const Icon(Icons.telegram,
-                color: Color(0xFF2AABEE), size: 24),
+            child: const Icon(Icons.telegram, color: Color(0xFF2AABEE), size: 24),
           ),
           const SizedBox(width: 12),
           Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            const Text('Telegram привязан',
-                style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 15,
-                    color: Color(0xFF1B1B1B))),
+            Text('Telegram привязан',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15,
+                    color: AppColors.textPrimary(context))),
             if (_tgUsername != null)
               Text('@$_tgUsername',
-                  style: const TextStyle(
-                      fontSize: 13, color: Color(0xFF666666))),
+                  style: TextStyle(fontSize: 13, color: AppColors.textSecondary(context))),
           ]),
           const Spacer(),
           Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: const Color(0xFFE8F5EE),
+              color: AppColors.primaryLight,
               borderRadius: BorderRadius.circular(8),
             ),
             child: const Text('✓ Активен',
-                style: TextStyle(
-                    color: Color(0xFF2C6E49),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600)),
+                style: TextStyle(color: AppColors.primary, fontSize: 12, fontWeight: FontWeight.w600)),
           ),
         ]),
         const SizedBox(height: 16),
-        const Text(
+        Text(
           'Вы будете получать уведомления о предстоящих процедурах в Telegram.',
-          style: TextStyle(fontSize: 13, color: Color(0xFF666666)),
+          style: TextStyle(fontSize: 13, color: AppColors.textSecondary(context)),
         ),
         const SizedBox(height: 16),
         SizedBox(
@@ -225,8 +267,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             style: OutlinedButton.styleFrom(
               foregroundColor: Colors.red,
               side: const BorderSide(color: Colors.red),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             ),
             child: const Text('Отвязать Telegram'),
           ),
@@ -241,36 +282,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
       children: [
         Row(children: [
           Container(
-            width: 40,
-            height: 40,
+            width: 40, height: 40,
             decoration: BoxDecoration(
-              color: const Color(0xFFF0F0F0),
+              color: AppColors.border(context),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: const Icon(Icons.telegram,
-                color: Color(0xFF888888), size: 24),
+            child: Icon(Icons.telegram, color: AppColors.textSecondary(context), size: 24),
           ),
           const SizedBox(width: 12),
-          const Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Telegram не привязан',
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 15,
-                        color: Color(0xFF1B1B1B))),
-                Text('Привяжите для получения уведомлений',
-                    style: TextStyle(
-                        fontSize: 12, color: Color(0xFF888888))),
-              ]),
+          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text('Telegram не привязан',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15,
+                    color: AppColors.textPrimary(context))),
+            Text('Привяжите для получения уведомлений',
+                style: TextStyle(fontSize: 12, color: AppColors.textSecondary(context))),
+          ]),
         ]),
         const SizedBox(height: 16),
-
         if (_generatedCode == null) ...[
-          const Text(
+          Text(
             'Привяжите Telegram чтобы получать напоминания о процедурах прямо в мессенджер.',
-            style:
-                TextStyle(fontSize: 13, color: Color(0xFF666666)),
+            style: TextStyle(fontSize: 13, color: AppColors.textSecondary(context)),
           ),
           const SizedBox(height: 16),
           SizedBox(
@@ -281,31 +313,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF2AABEE),
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 elevation: 0,
               ),
               icon: _generatingCode
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(
-                          color: Colors.white, strokeWidth: 2))
+                  ? const SizedBox(width: 18, height: 18,
+                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
                   : const Icon(Icons.telegram),
               label: const Text('Получить код привязки',
                   style: TextStyle(fontWeight: FontWeight.w600)),
             ),
           ),
         ] else ...[
-          const Text('Ваш код привязки:',
-              style: TextStyle(
-                  fontSize: 13, color: Color(0xFF666666))),
+          Text('Ваш код привязки:',
+              style: TextStyle(fontSize: 13, color: AppColors.textSecondary(context))),
           const SizedBox(height: 8),
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: const Color(0xFFF4FAF6),
+              color: AppColors.inputFill(context),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: const Color(0xFF2AABEE)),
             ),
@@ -314,53 +341,43 @@ class _ProfileScreenState extends State<ProfileScreen> {
               children: [
                 Text(
                   _generatedCode!,
-                  style: const TextStyle(
-                    fontSize: 36,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 8,
-                    color: Color(0xFF1B1B1B),
+                  style: TextStyle(
+                    fontSize: 36, fontWeight: FontWeight.bold,
+                    letterSpacing: 8, color: AppColors.textPrimary(context),
                   ),
                 ),
                 const SizedBox(width: 12),
                 IconButton(
                   onPressed: () {
-                    Clipboard.setData(
-                        ClipboardData(text: _generatedCode!));
+                    Clipboard.setData(ClipboardData(text: _generatedCode!));
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text('Код скопирован')),
+                      const SnackBar(content: Text('Код скопирован')),
                     );
                   },
-                  icon: const Icon(Icons.copy,
-                      color: Color(0xFF2AABEE)),
+                  icon: const Icon(Icons.copy, color: Color(0xFF2AABEE)),
                 ),
               ],
             ),
           ),
           const SizedBox(height: 12),
-          const Text(
+          Text(
             'Отправьте боту команду:\n/code XXXXXX',
-            style: TextStyle(
-                fontSize: 13,
-                color: Color(0xFF666666),
-                height: 1.5),
+            style: TextStyle(fontSize: 13, color: AppColors.textSecondary(context), height: 1.5),
           ),
           const SizedBox(height: 8),
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: const Color(0xFFF0F9FF),
+              color: AppColors.inputFill(context),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: const Row(children: [
-              Icon(Icons.info_outline,
-                  color: Color(0xFF2AABEE), size: 18),
-              SizedBox(width: 8),
+            child: Row(children: [
+              const Icon(Icons.info_outline, color: Color(0xFF2AABEE), size: 18),
+              const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   'Найдите бота в Telegram по имени @pawcare_notify_bot',
-                  style: TextStyle(
-                      fontSize: 12, color: Color(0xFF444444)),
+                  style: TextStyle(fontSize: 12, color: AppColors.textSecondary(context)),
                 ),
               ),
             ]),
@@ -369,13 +386,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Row(children: [
             Expanded(
               child: OutlinedButton(
-                onPressed: () =>
-                    setState(() => _generatedCode = null),
+                onPressed: () => setState(() => _generatedCode = null),
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFF888888),
-                  side: const BorderSide(color: Color(0xFFE0E0E0)),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10)),
+                  foregroundColor: AppColors.textSecondary(context),
+                  side: BorderSide(color: AppColors.border(context)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
                 child: const Text('Отмена'),
               ),
@@ -385,10 +400,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: ElevatedButton(
                 onPressed: _loadTelegramStatus,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF2C6E49),
+                  backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   elevation: 0,
                 ),
                 child: const Text('Проверить'),

@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import '../services/api_service.dart';
+import '../theme/app_colors.dart';
 
 class AddPetScreen extends StatefulWidget {
   const AddPetScreen({super.key});
@@ -30,7 +31,7 @@ class _AddPetScreenState extends State<AddPetScreen> {
     final picker = ImagePicker();
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.card(context),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -39,9 +40,11 @@ class _AddPetScreenState extends State<AddPetScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('Выбрать фото',
+            Text('Выбрать фото',
                 style: TextStyle(
-                    fontSize: 18, fontWeight: FontWeight.bold)),
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary(ctx))),
             const SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -52,11 +55,9 @@ class _AddPetScreenState extends State<AddPetScreen> {
                   onTap: () async {
                     Navigator.pop(ctx);
                     final img = await picker.pickImage(
-                        source: ImageSource.camera,
-                        imageQuality: 80);
+                        source: ImageSource.camera, imageQuality: 80);
                     if (img != null) {
-                      setState(() =>
-                          _selectedImage = File(img.path));
+                      setState(() => _selectedImage = File(img.path));
                     }
                   },
                 ),
@@ -66,11 +67,9 @@ class _AddPetScreenState extends State<AddPetScreen> {
                   onTap: () async {
                     Navigator.pop(ctx);
                     final img = await picker.pickImage(
-                        source: ImageSource.gallery,
-                        imageQuality: 80);
+                        source: ImageSource.gallery, imageQuality: 80);
                     if (img != null) {
-                      setState(() =>
-                          _selectedImage = File(img.path));
+                      setState(() => _selectedImage = File(img.path));
                     }
                   },
                 ),
@@ -96,16 +95,16 @@ class _AddPetScreenState extends State<AddPetScreen> {
             width: 64,
             height: 64,
             decoration: BoxDecoration(
-              color: const Color(0xFFE8F5EE),
+              color: AppColors.primaryLight,
               borderRadius: BorderRadius.circular(16),
             ),
-            child: Icon(icon,
-                color: const Color(0xFF2C6E49), size: 32),
+            child: Icon(icon, color: AppColors.primary, size: 32),
           ),
           const SizedBox(height: 8),
           Text(label,
-              style: const TextStyle(
-                  fontSize: 13, color: Color(0xFF444444))),
+              style: TextStyle(
+                  fontSize: 13,
+                  color: AppColors.textSecondary(context))),
         ],
       ),
     );
@@ -119,8 +118,7 @@ class _AddPetScreenState extends State<AddPetScreen> {
       lastDate: DateTime.now(),
       builder: (ctx, child) => Theme(
         data: Theme.of(ctx).copyWith(
-          colorScheme: const ColorScheme.light(
-              primary: Color(0xFF2C6E49)),
+          colorScheme: const ColorScheme.light(primary: AppColors.primary),
         ),
         child: child!,
       ),
@@ -158,7 +156,6 @@ class _AddPetScreenState extends State<AddPetScreen> {
       return;
     }
 
-    // Загружаем фото если выбрано
     if (_selectedImage != null) {
       final petId = result['data']['id'];
       await ApiService.uploadPetPhoto(
@@ -174,18 +171,17 @@ class _AddPetScreenState extends State<AddPetScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4FAF6),
+      backgroundColor: AppColors.bg(context),
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF4FAF6),
+        backgroundColor: AppColors.bg(context),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios,
-              color: Color(0xFF1B1B1B)),
+          icon: Icon(Icons.arrow_back_ios, color: AppColors.textPrimary(context)),
           onPressed: () => context.pop(),
         ),
-        title: const Text('Новый питомец',
+        title: Text('Новый питомец',
             style: TextStyle(
-                color: Color(0xFF1B1B1B),
+                color: AppColors.textPrimary(context),
                 fontWeight: FontWeight.bold)),
       ),
       body: SingleChildScrollView(
@@ -193,7 +189,6 @@ class _AddPetScreenState extends State<AddPetScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Фото
             Center(
               child: GestureDetector(
                 onTap: _pickImage,
@@ -201,29 +196,23 @@ class _AddPetScreenState extends State<AddPetScreen> {
                   width: 100,
                   height: 100,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFE8F5EE),
+                    color: AppColors.primaryLight,
                     borderRadius: BorderRadius.circular(50),
-                    border: Border.all(
-                        color: const Color(0xFF2C6E49), width: 2),
+                    border: Border.all(color: AppColors.primary, width: 2),
                   ),
                   child: _selectedImage != null
                       ? ClipRRect(
                           borderRadius: BorderRadius.circular(50),
-                          child: Image.file(
-                            _selectedImage!,
-                            fit: BoxFit.cover,
-                          ),
+                          child: Image.file(_selectedImage!, fit: BoxFit.cover),
                         )
                       : const Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.camera_alt,
-                                color: Color(0xFF2C6E49), size: 32),
+                            Icon(Icons.camera_alt, color: AppColors.primary, size: 32),
                             SizedBox(height: 4),
                             Text('Фото',
                                 style: TextStyle(
-                                    color: Color(0xFF2C6E49),
-                                    fontSize: 12)),
+                                    color: AppColors.primary, fontSize: 12)),
                           ],
                         ),
                 ),
@@ -232,17 +221,11 @@ class _AddPetScreenState extends State<AddPetScreen> {
             const SizedBox(height: 32),
             _label('Кличка *'),
             const SizedBox(height: 8),
-            _textField(
-                controller: _nameController,
-                hint: 'Например: Бублик',
-                icon: Icons.pets),
+            _textField(controller: _nameController, hint: 'Например: Бублик', icon: Icons.pets),
             const SizedBox(height: 20),
             _label('Порода'),
             const SizedBox(height: 8),
-            _textField(
-                controller: _breedController,
-                hint: 'Например: Лабрадор',
-                icon: Icons.category_outlined),
+            _textField(controller: _breedController, hint: 'Например: Лабрадор', icon: Icons.category_outlined),
             const SizedBox(height: 20),
             _label('Пол'),
             const SizedBox(height: 8),
@@ -258,17 +241,14 @@ class _AddPetScreenState extends State<AddPetScreen> {
               onTap: _pickDate,
               child: Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 16, vertical: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: AppColors.inputFill(context),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                      color: const Color(0xFFE0E0E0)),
+                  border: Border.all(color: AppColors.border(context)),
                 ),
                 child: Row(children: [
-                  const Icon(Icons.calendar_today_outlined,
-                      color: Color(0xFF2C6E49)),
+                  const Icon(Icons.calendar_today_outlined, color: AppColors.primary),
                   const SizedBox(width: 12),
                   Text(
                     _selectedDate == null
@@ -276,8 +256,8 @@ class _AddPetScreenState extends State<AddPetScreen> {
                         : '${_selectedDate!.day}.${_selectedDate!.month}.${_selectedDate!.year}',
                     style: TextStyle(
                       color: _selectedDate == null
-                          ? const Color(0xFFAAAAAA)
-                          : const Color(0xFF1B1B1B),
+                          ? AppColors.textSecondary(context)
+                          : AppColors.textPrimary(context),
                       fontSize: 15,
                     ),
                   ),
@@ -291,22 +271,18 @@ class _AddPetScreenState extends State<AddPetScreen> {
               child: ElevatedButton(
                 onPressed: _isLoading ? null : _save,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF2C6E49),
+                  backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   elevation: 0,
                 ),
                 child: _isLoading
                     ? const SizedBox(
                         width: 24,
                         height: 24,
-                        child: CircularProgressIndicator(
-                            color: Colors.white, strokeWidth: 2.5))
+                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
                     : const Text('Сохранить',
-                        style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600)),
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
               ),
             ),
           ],
@@ -316,10 +292,10 @@ class _AddPetScreenState extends State<AddPetScreen> {
   }
 
   Widget _label(String text) => Text(text,
-      style: const TextStyle(
+      style: TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w600,
-          color: Color(0xFF1B1B1B)));
+          color: AppColors.textPrimary(context)));
 
   Widget _textField({
     required TextEditingController controller,
@@ -328,25 +304,22 @@ class _AddPetScreenState extends State<AddPetScreen> {
   }) =>
       TextField(
         controller: controller,
+        style: TextStyle(color: AppColors.textPrimary(context)),
         decoration: InputDecoration(
           hintText: hint,
-          hintStyle:
-              const TextStyle(color: Color(0xFFAAAAAA)),
-          prefixIcon:
-              Icon(icon, color: const Color(0xFF2C6E49)),
+          hintStyle: TextStyle(color: AppColors.textSecondary(context)),
+          prefixIcon: Icon(icon, color: AppColors.primary),
           filled: true,
-          fillColor: Colors.white,
+          fillColor: AppColors.inputFill(context),
           border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide.none),
           enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide:
-                  const BorderSide(color: Color(0xFFE0E0E0))),
+              borderSide: BorderSide(color: AppColors.border(context))),
           focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(
-                  color: Color(0xFF2C6E49), width: 2)),
+              borderSide: const BorderSide(color: AppColors.primary, width: 2)),
         ),
       );
 
@@ -357,13 +330,13 @@ class _AddPetScreenState extends State<AddPetScreen> {
             padding: const EdgeInsets.symmetric(vertical: 14),
             decoration: BoxDecoration(
               color: _selectedSex == value
-                  ? const Color(0xFF2C6E49)
-                  : Colors.white,
+                  ? AppColors.primary
+                  : AppColors.inputFill(context),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
                 color: _selectedSex == value
-                    ? const Color(0xFF2C6E49)
-                    : const Color(0xFFE0E0E0),
+                    ? AppColors.primary
+                    : AppColors.border(context),
               ),
             ),
             child: Text(label,
@@ -371,7 +344,7 @@ class _AddPetScreenState extends State<AddPetScreen> {
                 style: TextStyle(
                     color: _selectedSex == value
                         ? Colors.white
-                        : const Color(0xFF666666),
+                        : AppColors.textSecondary(context),
                     fontWeight: FontWeight.w600)),
           ),
         ),

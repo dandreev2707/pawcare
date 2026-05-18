@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import '../services/api_service.dart';
+import '../theme/app_colors.dart';
 
 
 class PetDetailScreen extends StatefulWidget {
@@ -43,7 +44,7 @@ class _PetDetailScreenState extends State<PetDetailScreen> {
     final picker = ImagePicker();
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.card(context),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -52,9 +53,10 @@ class _PetDetailScreenState extends State<PetDetailScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('Изменить фото',
+            Text('Изменить фото',
                 style: TextStyle(
-                    fontSize: 18, fontWeight: FontWeight.bold)),
+                    fontSize: 18, fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary(ctx))),
             const SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -112,8 +114,8 @@ class _PetDetailScreenState extends State<PetDetailScreen> {
           ),
           const SizedBox(height: 8),
           Text(label,
-              style: const TextStyle(
-                  fontSize: 13, color: Color(0xFF444444))),
+              style: TextStyle(
+                  fontSize: 13, color: AppColors.textSecondary(ctx))),
         ],
       ),
     );
@@ -125,7 +127,7 @@ class _PetDetailScreenState extends State<PetDetailScreen> {
                 _pet['sex'] == 'female' ? '♀ Девочка' : 'Пол не указан';
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF4FAF6),
+      backgroundColor: AppColors.bg(context),
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
@@ -187,17 +189,17 @@ class _PetDetailScreenState extends State<PetDetailScreen> {
                 children: [
                   Text(
                     _pet['name'] ?? '',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF1B1B1B),
+                      color: AppColors.textPrimary(context),
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     _pet['breed'] ?? 'Порода не указана',
-                    style: const TextStyle(
-                        fontSize: 16, color: Color(0xFF666666)),
+                    style: TextStyle(
+                        fontSize: 16, color: AppColors.textSecondary(context)),
                   ),
                   const SizedBox(height: 24),
                   Row(children: [
@@ -222,6 +224,17 @@ class _PetDetailScreenState extends State<PetDetailScreen> {
                       '/weight/${_pet['id']}/${Uri.encodeComponent(_pet['name'])}',
                     ),
                   ),
+                  if (_pet['sex'] == 'female') ...[
+                    const SizedBox(height: 12),
+                    _actionButton(
+                      icon: Icons.favorite_outline,
+                      label: 'Календарь течек',
+                      iconColor: const Color(0xFFE91E8C),
+                      onTap: () => context.push(
+                        '/heat-cycles/${_pet['id']}/${Uri.encodeComponent(_pet['name'])}',
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -248,7 +261,7 @@ class _PetDetailScreenState extends State<PetDetailScreen> {
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppColors.card(context),
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
@@ -260,17 +273,17 @@ class _PetDetailScreenState extends State<PetDetailScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(icon, color: const Color(0xFF2C6E49), size: 24),
+              Icon(icon, color: AppColors.primary, size: 24),
               const SizedBox(height: 8),
               Text(label,
-                  style: const TextStyle(
-                      fontSize: 12, color: Color(0xFF888888))),
+                  style: TextStyle(
+                      fontSize: 12, color: AppColors.textSecondary(context))),
               const SizedBox(height: 2),
               Text(value,
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF1B1B1B))),
+                      color: AppColors.textPrimary(context))),
             ],
           ),
         ),
@@ -280,6 +293,7 @@ class _PetDetailScreenState extends State<PetDetailScreen> {
     required IconData icon,
     required String label,
     required VoidCallback onTap,
+    Color? iconColor,
   }) =>
       GestureDetector(
         onTap: onTap,
@@ -287,7 +301,7 @@ class _PetDetailScreenState extends State<PetDetailScreen> {
           width: double.infinity,
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppColors.card(context),
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
@@ -300,20 +314,19 @@ class _PetDetailScreenState extends State<PetDetailScreen> {
             Container(
               width: 44, height: 44,
               decoration: BoxDecoration(
-                color: const Color(0xFFE8F5EE),
+                color: (iconColor ?? AppColors.primary).withOpacity(0.12),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(icon, color: const Color(0xFF2C6E49)),
+              child: Icon(icon, color: iconColor ?? AppColors.primary),
             ),
             const SizedBox(width: 16),
             Text(label,
-                style: const TextStyle(
+                style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF1B1B1B))),
+                    color: AppColors.textPrimary(context))),
             const Spacer(),
-            const Icon(Icons.chevron_right,
-                color: Color(0xFF2C6E49)),
+            const Icon(Icons.chevron_right, color: AppColors.primary),
           ]),
         ),
       );
