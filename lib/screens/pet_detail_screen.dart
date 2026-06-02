@@ -171,12 +171,9 @@ class _PetDetailScreenState extends State<PetDetailScreen> {
                       _buildPhotoUrl(_pet['photo_url'] as String),
                       key: ValueKey('${_pet['photo_url']}_$_photoVersion'),
                       fit: BoxFit.cover,
-                      loadingBuilder: (_, child, progress) =>
-                          progress == null ? child : _defaultAvatar(),
-                      errorBuilder: (_, error, __) {
-                        debugPrint('Фото не загружено: $error');
-                        return _defaultAvatar();
-                      },
+                      frameBuilder: (_, child, frame, sync) =>
+                          (sync || frame != null) ? child : _defaultAvatar(),
+                      errorBuilder: (_, __, ___) => _defaultAvatar(),
                     )
                   : _defaultAvatar(),
             ),
@@ -265,7 +262,7 @@ class _PetDetailScreenState extends State<PetDetailScreen> {
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withValues(alpha: 0.05),
                 blurRadius: 8, offset: const Offset(0, 2),
               )
             ],
@@ -305,7 +302,7 @@ class _PetDetailScreenState extends State<PetDetailScreen> {
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withValues(alpha: 0.05),
                 blurRadius: 8, offset: const Offset(0, 2),
               )
             ],
@@ -314,7 +311,7 @@ class _PetDetailScreenState extends State<PetDetailScreen> {
             Container(
               width: 44, height: 44,
               decoration: BoxDecoration(
-                color: (iconColor ?? AppColors.primary).withOpacity(0.12),
+                color: (iconColor ?? AppColors.primary).withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(icon, color: iconColor ?? AppColors.primary),

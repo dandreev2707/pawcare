@@ -24,6 +24,21 @@ class _HealthScreenState extends State<HealthScreen> {
   List<dynamic> _records = [];
   bool _isLoading = true;
   bool _isExporting = false;
+  String _filterType = 'all';
+
+  static const _filterItems = [
+    {'value': 'all',           'label': 'Все'},
+    {'value': 'vaccination',   'label': 'Вакцинация'},
+    {'value': 'deworming',     'label': 'Дегельминтизация'},
+    {'value': 'antiparasitic', 'label': 'От паразитов'},
+    {'value': 'vet_visit',     'label': 'Визит к врачу'},
+    {'value': 'chronic_disease','label': 'Хроническое'},
+    {'value': 'medication',    'label': 'Медикамент'},
+  ];
+
+  List<dynamic> get _filteredRecords => _filterType == 'all'
+      ? _records
+      : _records.where((r) => r['record_type'] == _filterType).toList();
 
   @override
   void initState() {
@@ -183,22 +198,26 @@ class _HealthScreenState extends State<HealthScreen> {
       ),
       body: _isLoading
           ? const Center(
-              child: CircularProgressIndicator(
-                color: Color(0xFF2C6E49),
-              ),
-            )
-          : _records.isEmpty
-              ? _buildEmpty()
-              : RefreshIndicator(
-                  onRefresh: _loadRecords,
-                  color: const Color(0xFF2C6E49),
-                  child: ListView.builder(
-                    padding: const EdgeInsets.all(24),
-                    itemCount: _records.length,
-                    itemBuilder: (ctx, i) =>
-                        _buildRecordCard(_records[i]),
-                  ),
+              child: CircularProgressIndicator(color: Color(0xFF2C6E49)))
+          : Column(
+              children: [
+                _buildFilterRow(),
+                Expanded(
+                  child: _filteredRecords.isEmpty
+                      ? _buildEmpty()
+                      : RefreshIndicator(
+                          onRefresh: _loadRecords,
+                          color: const Color(0xFF2C6E49),
+                          child: ListView.builder(
+                            padding: const EdgeInsets.all(24),
+                            itemCount: _filteredRecords.length,
+                            itemBuilder: (ctx, i) =>
+                                _buildRecordCard(_filteredRecords[i]),
+                          ),
+                        ),
                 ),
+              ],
+            ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
           await context.push('/add-health/${widget.petId}');
@@ -211,6 +230,44 @@ class _HealthScreenState extends State<HealthScreen> {
           'Добавить запись',
           style: TextStyle(fontWeight: FontWeight.w600),
         ),
+      ),
+    );
+  }
+
+  Widget _buildFilterRow() {
+    return SizedBox(
+      height: 44,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        itemCount: _filterItems.length,
+        itemBuilder: (ctx, i) {
+          final item = _filterItems[i];
+          final selected = _filterType == item['value'];
+          return GestureDetector(
+            onTap: () => setState(() => _filterType = item['value']!),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              margin: const EdgeInsets.only(right: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 14),
+              decoration: BoxDecoration(
+                color: selected
+                    ? const Color(0xFF2C6E49)
+                    : const Color(0xFF2C6E49).withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                item['label']!,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: selected ? Colors.white : const Color(0xFF2C6E49),
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -318,7 +375,7 @@ class _HealthScreenState extends State<HealthScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           )
@@ -390,10 +447,6 @@ class _HealthScreenState extends State<HealthScreen> {
                               fontWeight: FontWeight.w500)),
                     ]),
                   ],
-                  const SizedBox(height: 4),
-                  const Text('← свайп для удаления',
-                      style: TextStyle(
-                          color: Color(0xFFCCCCCC), fontSize: 11)),
                 ],
               ),
             ),

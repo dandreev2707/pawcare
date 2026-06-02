@@ -218,7 +218,7 @@ class _WeightScreenState extends State<WeightScreen> {
                         color: AppColors.card(context),
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
+                            color: Colors.black.withValues(alpha: 0.05),
                             blurRadius: 10, offset: const Offset(0, 2))],
                       ),
                       child: LineChart(LineChartData(
@@ -278,7 +278,7 @@ class _WeightScreenState extends State<WeightScreen> {
                             ),
                             belowBarData: BarAreaData(
                               show: true,
-                              color: AppColors.primary.withOpacity(0.1),
+                              color: AppColors.primary.withValues(alpha: 0.1),
                             ),
                           ),
                         ],
@@ -327,6 +327,26 @@ class _WeightScreenState extends State<WeightScreen> {
     );
   }
 
+  Future<void> _deleteLog(String weightId) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Удалить измерение?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Отмена')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Удалить', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+    if (confirm == true) {
+      await ApiService.deleteWeightLog(petId: widget.petId, weightId: weightId);
+      _loadLogs();
+    }
+  }
+
   Widget _buildLogItem(Map<String, dynamic> log) {
     String dateStr = '';
     try {
@@ -341,7 +361,7 @@ class _WeightScreenState extends State<WeightScreen> {
         color: AppColors.card(context),
         borderRadius: BorderRadius.circular(12),
         boxShadow: [BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 8, offset: const Offset(0, 2))],
       ),
       child: Row(children: [
@@ -361,6 +381,14 @@ class _WeightScreenState extends State<WeightScreen> {
         Text('${(log['weight_kg'] as num).toStringAsFixed(1)} кг',
             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold,
                 color: AppColors.primary)),
+        const SizedBox(width: 8),
+        IconButton(
+          icon: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
+          onPressed: () => _deleteLog(log['id'] as String),
+          tooltip: 'Удалить',
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(),
+        ),
       ]),
     );
   }

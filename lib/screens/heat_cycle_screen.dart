@@ -522,7 +522,7 @@ class _HeatCycleScreenState extends State<HeatCycleScreen>
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 10,
                   offset: const Offset(0, 2),
                 )
@@ -558,7 +558,7 @@ class _HeatCycleScreenState extends State<HeatCycleScreen>
                 weekendTextStyle:
                     TextStyle(color: AppColors.textSecondary(context)),
                 outsideTextStyle:
-                    TextStyle(color: AppColors.textSecondary(context).withOpacity(0.4)),
+                    TextStyle(color: AppColors.textSecondary(context).withValues(alpha: 0.4)),
               ),
               onPageChanged: (day) => setState(() => _focusedDay = day),
               calendarBuilders: CalendarBuilders(
@@ -605,9 +605,9 @@ class _HeatCycleScreenState extends State<HeatCycleScreen>
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: _pink.withOpacity(0.08),
+                color: _pink.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: _pink.withOpacity(0.2)),
+                border: Border.all(color: _pink.withValues(alpha: 0.2)),
               ),
               child: Row(children: [
                 const Icon(Icons.auto_awesome, color: _pink, size: 20),
@@ -628,7 +628,7 @@ class _HeatCycleScreenState extends State<HeatCycleScreen>
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [_pink, _pink.withOpacity(0.7)],
+                  colors: [_pink, _pink.withValues(alpha: 0.7)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -672,14 +672,14 @@ class _HeatCycleScreenState extends State<HeatCycleScreen>
             color: isAnchor
                 ? _pink
                 : inCycle
-                    ? _pink.withOpacity(0.18)
+                    ? _pink.withValues(alpha: 0.18)
                     : isToday
-                        ? _pink.withOpacity(0.12)
+                        ? _pink.withValues(alpha: 0.12)
                         : null,
             border: isToday && !inCycle
                 ? Border.all(color: _pink, width: 1.5)
                 : isPred && !inCycle
-                    ? Border.all(color: _pink.withOpacity(0.5), width: 1.5)
+                    ? Border.all(color: _pink.withValues(alpha: 0.5), width: 1.5)
                     : null,
           ),
           alignment: Alignment.center,
@@ -702,7 +702,7 @@ class _HeatCycleScreenState extends State<HeatCycleScreen>
           Container(
             width: 4, height: 4,
             decoration: BoxDecoration(
-                color: _pink.withOpacity(0.6), shape: BoxShape.circle),
+                color: _pink.withValues(alpha: 0.6), shape: BoxShape.circle),
           )
         else
           const SizedBox(height: 4),
@@ -722,10 +722,10 @@ class _HeatCycleScreenState extends State<HeatCycleScreen>
             color: filled
                 ? _pink
                 : soft
-                    ? _pink.withOpacity(0.18)
+                    ? _pink.withValues(alpha: 0.18)
                     : null,
             border: predicted
-                ? Border.all(color: _pink.withOpacity(0.5), width: 1.5)
+                ? Border.all(color: _pink.withValues(alpha: 0.5), width: 1.5)
                 : null,
           ),
           alignment: Alignment.center,
@@ -745,7 +745,7 @@ class _HeatCycleScreenState extends State<HeatCycleScreen>
           Container(
             width: 4, height: 4,
             decoration: BoxDecoration(
-                color: _pink.withOpacity(0.6), shape: BoxShape.circle),
+                color: _pink.withValues(alpha: 0.6), shape: BoxShape.circle),
           )
         else
           const SizedBox(height: 4),
@@ -806,7 +806,7 @@ class _HeatCycleScreenState extends State<HeatCycleScreen>
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
+                color: Colors.white.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
@@ -828,7 +828,7 @@ class _HeatCycleScreenState extends State<HeatCycleScreen>
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, 2))
         ],
@@ -840,7 +840,7 @@ class _HeatCycleScreenState extends State<HeatCycleScreen>
             Container(
               width: 48, height: 48,
               decoration: BoxDecoration(
-                color: _pink.withOpacity(0.12),
+                color: _pink.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(14),
               ),
               child: const Icon(Icons.favorite_outline, color: _pink, size: 26),
@@ -917,7 +917,7 @@ class _HeatCycleScreenState extends State<HeatCycleScreen>
         border: isActive ? Border.all(color: _pink, width: 1.5) : null,
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withValues(alpha: 0.04),
               blurRadius: 8,
               offset: const Offset(0, 2))
         ],
@@ -926,7 +926,7 @@ class _HeatCycleScreenState extends State<HeatCycleScreen>
         Container(
           width: 44, height: 44,
           decoration: BoxDecoration(
-            color: _pink.withOpacity(isActive ? 0.15 : 0.08),
+            color: _pink.withValues(alpha: isActive ? 0.15 : 0.08),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(isActive ? Icons.favorite : Icons.favorite_border,
@@ -958,7 +958,7 @@ class _HeatCycleScreenState extends State<HeatCycleScreen>
                     padding:
                         const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                     decoration: BoxDecoration(
-                      color: _pink.withOpacity(0.12),
+                      color: _pink.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: const Text('активна',

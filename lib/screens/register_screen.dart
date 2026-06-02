@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import '../services/api_service.dart';
+import '../blocs/auth/auth_cubit.dart';
 import '../theme/app_colors.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -21,7 +22,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _passwordFocus = FocusNode();
   final _confirmFocus  = FocusNode();
 
-  bool _isLoading       = false;
   bool _obscurePassword = true;
   bool _obscureConfirm  = true;
 
@@ -137,7 +137,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
   }
 
-  Future<void> _register() async {
+  void _register() {
     setState(() {
       _nameTouched     = true;
       _emailTouched    = true;
@@ -145,31 +145,32 @@ class _RegisterScreenState extends State<RegisterScreen> {
       _confirmTouched  = true;
     });
     if (!_formValid) return;
-
-    setState(() => _isLoading = true);
-    final result = await ApiService.register(
+    context.read<AuthCubit>().register(
       name:     _nameController.text.trim(),
       email:    _emailController.text.trim(),
       password: _passwordController.text,
     );
-    setState(() => _isLoading = false);
-
-    if (!mounted) return;
-    if (result['success']) {
-      await ApiService.saveToken(result['data']['access_token']);
-      if (mounted) context.go('/home');
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(result['message'] ?? 'Ошибка регистрации')),
-      );
-    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.bg(context),
-      appBar: AppBar(
+    return BlocConsumer<AuthCubit, AuthState>(
+      listener: (ctx, state) {
+        if (state is AuthAuthenticated) {
+          context.read<AuthCubit>().resetState();
+          context.go('/home');
+        } else if (state is AuthError) {
+          ScaffoldMessenger.of(ctx).showSnackBar(
+            SnackBar(content: Text(state.message)),
+          );
+          context.read<AuthCubit>().resetState();
+        }
+      },
+      builder: (ctx, state) {
+        final isLoading = state is AuthLoading;
+        return Scaffold(
+          backgroundColor: AppColors.bg(context),
+          appBar: AppBar(
         backgroundColor: AppColors.bg(context),
         elevation: 0,
         leading: IconButton(
@@ -256,22 +257,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 width: double.infinity,
                 height: 54,
                 child: ElevatedButton(
-                  onPressed: _isLoading ? null : _register,
+                  onPressed: isLoading ? null : _register,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF2C6E49),
                     foregroundColor: Colors.white,
-                    disabledBackgroundColor: const Color(0xFF2C6E49).withOpacity(0.6),
+                    disabledBackgroundColor: const Color(0xFF2C6E49).withValues(alpha: 0.6),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12)),
                     elevation: 0,
                   ),
-                  child: _isLoading
+                  child: isLoading
                       ? const SizedBox(
                           width: 24, height: 24,
                           child: CircularProgressIndicator(
                               color: Colors.white, strokeWidth: 2.5))
                       : const Text('Зарегистрироваться',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.w600)),
                 ),
               ),
               const SizedBox(height: 16),
@@ -294,6 +296,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ),
         ),
       ),
+        );
+      },
     );
   }
 

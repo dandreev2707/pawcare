@@ -146,11 +146,17 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  String _buildPhotoUrl(String url) =>
+      url.startsWith('http') ? url : '${ApiService.baseUrl}$url';
+
   Widget _buildPetCard(Map<String, dynamic> pet) {
     final sex = pet['sex'] == 'male' ? '♂' :
                 pet['sex'] == 'female' ? '♀' : '';
-    return GestureDetector(
-      onTap: () => context.push('/pet-detail', extra: pet),
+return GestureDetector(
+      onTap: () async {
+        await context.push('/pet-detail', extra: pet);
+        _loadPets();
+      },
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(
@@ -158,7 +164,7 @@ class _HomeScreenState extends State<HomeScreen> {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, 2),
             )
@@ -178,8 +184,14 @@ class _HomeScreenState extends State<HomeScreen> {
               borderRadius: BorderRadius.circular(16),
               child: pet['photo_url'] != null
                   ? Image.network(
-                      '${ApiService.baseUrl}${pet['photo_url']}',
+                      _buildPhotoUrl(pet['photo_url'] as String),
                       fit: BoxFit.cover,
+                      width: 56, height: 56,
+                      frameBuilder: (_, child, frame, sync) =>
+                          (sync || frame != null)
+                              ? child
+                              : const Icon(Icons.pets,
+                                  color: AppColors.primary, size: 28),
                       errorBuilder: (_, __, ___) => const Icon(
                           Icons.pets, color: AppColors.primary, size: 28),
                     )

@@ -127,7 +127,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
+                      color: Colors.black.withValues(alpha: 0.05),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     )
@@ -158,7 +158,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
+                        color: Colors.black.withValues(alpha: 0.05),
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       )
@@ -229,7 +229,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Container(
             width: 40, height: 40,
             decoration: BoxDecoration(
-              color: const Color(0xFF2AABEE).withOpacity(0.15),
+              color: const Color(0xFF2AABEE).withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(10),
             ),
             child: const Icon(Icons.telegram, color: Color(0xFF2AABEE), size: 24),

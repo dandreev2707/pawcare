@@ -427,4 +427,74 @@ class ApiService {
       return {'success': false, 'message': e.response?.data['detail'] ?? 'Ошибка'};
     }
   }
+
+  // РЕДАКТИРОВАТЬ ЗАПИСЬ ЗДОРОВЬЯ
+  static Future<Map<String, dynamic>> updateHealthRecord({
+    required String petId,
+    required String recordId,
+    String? title,
+    String? description,
+    String? recordDate,
+    String? nextDate,
+  }) async {
+    try {
+      final headers = await _authHeaders();
+      final response = await _dio.put(
+        '/api/v1/pets/$petId/health/$recordId',
+        data: {
+          if (title != null) 'title': title,
+          if (description != null) 'description': description,
+          if (recordDate != null) 'record_date': recordDate,
+          if (nextDate != null) 'next_date': nextDate,
+        },
+        options: Options(headers: headers),
+      );
+      return {'success': true, 'data': response.data};
+    } on DioException catch (e) {
+      return {'success': false, 'message': e.response?.data['detail'] ?? 'Ошибка'};
+    }
+  }
+
+  // GOOGLE OAUTH
+  static Future<Map<String, dynamic>> loginWithGoogleCode(String code) async {
+    try {
+      final response = await _dio.post(
+        '/api/v1/auth/google/exchange',
+        data: {'code': code},
+      );
+      return {'success': true, 'data': response.data};
+    } on DioException catch (e) {
+      return {'success': false, 'message': e.response?.data['detail'] ?? 'Ошибка Google авторизации'};
+    }
+  }
+
+  // TELEGRAM LOGIN
+  static Future<Map<String, dynamic>> loginWithTelegramCode(String code) async {
+    try {
+      final response = await _dio.post(
+        '/api/v1/auth/telegram-login',
+        data: {'code': code},
+      );
+      return {'success': true, 'data': response.data};
+    } on DioException catch (e) {
+      return {'success': false, 'message': e.response?.data['detail'] ?? 'Неверный код'};
+    }
+  }
+
+  // УДАЛИТЬ ЗАПИСЬ ВЕСА
+  static Future<Map<String, dynamic>> deleteWeightLog({
+    required String petId,
+    required String weightId,
+  }) async {
+    try {
+      final headers = await _authHeaders();
+      await _dio.delete(
+        '/api/v1/pets/$petId/weight/$weightId',
+        options: Options(headers: headers),
+      );
+      return {'success': true};
+    } on DioException catch (e) {
+      return {'success': false, 'message': e.response?.data['detail'] ?? 'Ошибка'};
+    }
+  }
 }

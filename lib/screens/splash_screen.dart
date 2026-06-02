@@ -57,7 +57,7 @@ class _SplashScreenState extends State<SplashScreen> {
               width: 100,
               height: 100,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.15),
+                color: Colors.white.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(28),
               ),
               child: const Icon(Icons.pets, size: 56, color: Colors.white),
@@ -77,7 +77,7 @@ class _SplashScreenState extends State<SplashScreen> {
               'Здоровье питомца под контролем',
               style: TextStyle(
                 fontSize: 15,
-                color: Colors.white.withOpacity(0.8),
+                color: Colors.white.withValues(alpha: 0.8),
               ),
             ),
             const SizedBox(height: 60),

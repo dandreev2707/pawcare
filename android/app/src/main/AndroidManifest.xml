@@ -12,7 +12,8 @@
     <application
         android:label="pawcare"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:usesCleartextTraffic="true">
         <meta-data
     android:name="com.yandex.android.maps.MAPKIT_API_KEY"
     android:value="cc93becc-d055-4e90-9b36-219d4609e902"/>

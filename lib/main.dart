@@ -1,9 +1,12 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:yandex_mapkit/yandex_mapkit.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'blocs/auth/auth_cubit.dart';
 import 'services/notification_service.dart';
 import 'screens/splash_screen.dart';
 import 'screens/onboarding_screen.dart';
@@ -42,11 +45,18 @@ Future<void> saveThemePreference(ThemeMode mode) async {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  AndroidYandexMap.useAndroidViewSurface = false;
+  if (Platform.isAndroid) AndroidYandexMap.useAndroidViewSurface = false;
   await initializeDateFormatting('ru_RU', null);
   await loadThemePreference();
   await NotificationService.init();
-  runApp(const PawCareApp());
+  // Pre-warm DNS so Cloudinary images load on first launch without delay
+  InternetAddress.lookup('res.cloudinary.com').catchError((_) => <InternetAddress>[]);
+  runApp(
+    BlocProvider(
+      create: (_) => AuthCubit(),
+      child: const PawCareApp(),
+    ),
+  );
 }
 
 final _router = GoRouter(

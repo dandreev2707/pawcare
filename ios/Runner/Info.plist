@@ -66,5 +66,31 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<!-- Камера и галерея (image_picker) -->
+	<key>NSCameraUsageDescription</key>
+	<string>Нужно для фотографирования питомца</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Нужно для выбора фото питомца из галереи</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Нужно для сохранения фото питомца</string>
+	<!-- Геолокация (geolocator / карта ветклиник) -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Нужно для поиска ветеринарных клиник рядом</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Нужно для поиска ветеринарных клиник рядом</string>
+	<!-- Yandex MapKit -->
+	<key>YMKApiKey</key>
+	<string>cc93becc-d055-4e90-9b36-219d4609e902</string>
+	<!-- HTTP к локальному серверу (LOCAL=true режим) -->
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
+	<!-- Открытие PDF из приложения -->
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<true/>
+	<key>UIFileSharingEnabled</key>
+	<true/>
 </dict>
 </plist>
