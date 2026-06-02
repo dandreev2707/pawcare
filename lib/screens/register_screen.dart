@@ -25,7 +25,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool _obscurePassword = true;
   bool _obscureConfirm  = true;
 
-  // Флаги — показывать ошибку только после первого касания
   bool _nameTouched     = false;
   bool _emailTouched    = false;
   bool _passwordTouched = false;
@@ -61,7 +60,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.dispose();
   }
 
-  // ── Валидация ───────────────────────────────────────
   String? get _nameError {
     final v = _nameController.text.trim();
     if (v.isEmpty) return 'Введите имя';
@@ -104,7 +102,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
       _passwordError == null &&
       _confirmError == null;
 
-  // ── Надёжность пароля ───────────────────────────────
   int get _passwordStrength {
     final v = _passwordController.text;
     if (v.isEmpty) return 0;
@@ -171,131 +168,125 @@ class _RegisterScreenState extends State<RegisterScreen> {
         return Scaffold(
           backgroundColor: AppColors.bg(context),
           appBar: AppBar(
-        backgroundColor: AppColors.bg(context),
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios, color: AppColors.textPrimary(context)),
-          onPressed: () => context.go('/login'),
-        ),
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Создать аккаунт',
-                  style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary(context))),
-              const SizedBox(height: 8),
-              Text('Зарегистрируйтесь чтобы начать',
-                  style: TextStyle(fontSize: 16, color: AppColors.textSecondary(context))),
-              const SizedBox(height: 32),
-
-              // Имя
-              _buildField(
-                label: 'Имя',
-                controller: _nameController,
-                focusNode: _nameFocus,
-                hint: 'Иван Иванов',
-                icon: Icons.person_outlined,
-                error: _nameTouched ? _nameError : null,
-                onChanged: (_) => setState(() {}),
-              ),
-              const SizedBox(height: 20),
-
-              // Email
-              _buildField(
-                label: 'Email',
-                controller: _emailController,
-                focusNode: _emailFocus,
-                hint: 'example@mail.ru',
-                icon: Icons.email_outlined,
-                keyboardType: TextInputType.emailAddress,
-                error: _emailTouched ? _emailError : null,
-                onChanged: (_) => setState(() {}),
-              ),
-              const SizedBox(height: 20),
-
-              // Пароль
-              _buildLabel('Пароль'),
-              const SizedBox(height: 8),
-              _buildPasswordField(
-                controller: _passwordController,
-                focusNode: _passwordFocus,
-                hint: '••••••••',
-                obscure: _obscurePassword,
-                error: _passwordTouched ? _passwordError : null,
-                onToggle: () => setState(() => _obscurePassword = !_obscurePassword),
-                onChanged: (_) => setState(() {}),
-              ),
-              // Индикатор надёжности
-              if (_passwordController.text.isNotEmpty) ...[
-                const SizedBox(height: 8),
-                _buildStrengthIndicator(),
-              ],
-              const SizedBox(height: 20),
-
-              // Подтверждение пароля
-              _buildLabel('Повторите пароль'),
-              const SizedBox(height: 8),
-              _buildPasswordField(
-                controller: _confirmController,
-                focusNode: _confirmFocus,
-                hint: '••••••••',
-                obscure: _obscureConfirm,
-                error: _confirmTouched ? _confirmError : null,
-                onToggle: () => setState(() => _obscureConfirm = !_obscureConfirm),
-                onChanged: (_) => setState(() {}),
-              ),
-              const SizedBox(height: 32),
-
-              // Кнопка
-              SizedBox(
-                width: double.infinity,
-                height: 54,
-                child: ElevatedButton(
-                  onPressed: isLoading ? null : _register,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF2C6E49),
-                    foregroundColor: Colors.white,
-                    disabledBackgroundColor: const Color(0xFF2C6E49).withValues(alpha: 0.6),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
-                    elevation: 0,
-                  ),
-                  child: isLoading
-                      ? const SizedBox(
-                          width: 24, height: 24,
-                          child: CircularProgressIndicator(
-                              color: Colors.white, strokeWidth: 2.5))
-                      : const Text('Зарегистрироваться',
-                          style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.w600)),
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+            backgroundColor: AppColors.bg(context),
+            elevation: 0,
+            leading: IconButton(
+              icon: Icon(Icons.arrow_back_ios, color: AppColors.textPrimary(context)),
+              onPressed: () => context.go('/login'),
+            ),
+          ),
+          body: SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Уже есть аккаунт? ',
-                      style: TextStyle(color: AppColors.textSecondary(context))),
-                  GestureDetector(
-                    onTap: () => context.go('/login'),
-                    child: const Text('Войти',
-                        style: TextStyle(
-                            color: Color(0xFF2C6E49),
-                            fontWeight: FontWeight.w600)),
+                  Text('Создать аккаунт',
+                      style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary(context))),
+                  const SizedBox(height: 8),
+                  Text('Зарегистрируйтесь, чтобы начать',
+                      style: TextStyle(fontSize: 16, color: AppColors.textSecondary(context))),
+                  const SizedBox(height: 32),
+
+                  _buildField(
+                    label: 'Имя',
+                    controller: _nameController,
+                    focusNode: _nameFocus,
+                    hint: 'Иван Иванов',
+                    icon: Icons.person_outlined,
+                    error: _nameTouched ? _nameError : null,
+                    onChanged: (_) => setState(() {}),
+                  ),
+                  const SizedBox(height: 20),
+
+                  _buildField(
+                    label: 'Email',
+                    controller: _emailController,
+                    focusNode: _emailFocus,
+                    hint: 'example@mail.ru',
+                    icon: Icons.email_outlined,
+                    keyboardType: TextInputType.emailAddress,
+                    error: _emailTouched ? _emailError : null,
+                    onChanged: (_) => setState(() {}),
+                  ),
+                  const SizedBox(height: 20),
+
+                  _buildLabel('Пароль'),
+                  const SizedBox(height: 8),
+                  _buildPasswordField(
+                    controller: _passwordController,
+                    focusNode: _passwordFocus,
+                    hint: '••••••••',
+                    obscure: _obscurePassword,
+                    error: _passwordTouched ? _passwordError : null,
+                    onToggle: () => setState(() => _obscurePassword = !_obscurePassword),
+                    onChanged: (_) => setState(() {}),
+                  ),
+                  if (_passwordController.text.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    _buildStrengthIndicator(),
+                  ],
+                  const SizedBox(height: 20),
+
+                  _buildLabel('Повторите пароль'),
+                  const SizedBox(height: 8),
+                  _buildPasswordField(
+                    controller: _confirmController,
+                    focusNode: _confirmFocus,
+                    hint: '••••••••',
+                    obscure: _obscureConfirm,
+                    error: _confirmTouched ? _confirmError : null,
+                    onToggle: () => setState(() => _obscureConfirm = !_obscureConfirm),
+                    onChanged: (_) => setState(() {}),
+                  ),
+                  const SizedBox(height: 32),
+
+                  SizedBox(
+                    width: double.infinity,
+                    height: 54,
+                    child: ElevatedButton(
+                      onPressed: isLoading ? null : _register,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2C6E49),
+                        foregroundColor: Colors.white,
+                        disabledBackgroundColor: const Color(0xFF2C6E49).withValues(alpha: 0.6),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                        elevation: 0,
+                      ),
+                      child: isLoading
+                          ? const SizedBox(
+                              width: 24, height: 24,
+                              child: CircularProgressIndicator(
+                                  color: Colors.white, strokeWidth: 2.5))
+                          : const Text('Зарегистрироваться',
+                              style: TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.w600)),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text('Уже есть аккаунт? ',
+                          style: TextStyle(color: AppColors.textSecondary(context))),
+                      GestureDetector(
+                        onTap: () => context.go('/login'),
+                        child: const Text('Войти',
+                            style: TextStyle(
+                                color: Color(0xFF2C6E49),
+                                fontWeight: FontWeight.w600)),
+                      ),
+                    ],
                   ),
                 ],
               ),
-            ],
+            ),
           ),
-        ),
-      ),
         );
       },
     );

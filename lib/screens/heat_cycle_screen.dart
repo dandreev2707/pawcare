@@ -176,7 +176,6 @@ class _HeatCycleScreenState extends State<HeatCycleScreen>
                       color: AppColors.textPrimary(ctx))),
               const SizedBox(height: 20),
 
-              // Дата начала
               Text('Дата начала',
                   style: TextStyle(
                       fontSize: 14,
@@ -220,7 +219,6 @@ class _HeatCycleScreenState extends State<HeatCycleScreen>
               ),
               const SizedBox(height: 16),
 
-              // Дата окончания
               Text('Дата окончания',
                   style: TextStyle(
                       fontSize: 14,
@@ -309,7 +307,6 @@ class _HeatCycleScreenState extends State<HeatCycleScreen>
                 height: 52,
                 child: ElevatedButton(
                   onPressed: () async {
-                    // Валидация
                     if (endDate != null && endDate!.isBefore(startDate)) {
                       ScaffoldMessenger.of(ctx).showSnackBar(
                         const SnackBar(
@@ -442,7 +439,6 @@ class _HeatCycleScreenState extends State<HeatCycleScreen>
     );
   }
 
-  // ── Вкладка «Список» ────────────────────────────────
   Widget _buildListTab() {
     final active = _activeCycle;
     final predicted = _nextPredicted;
@@ -506,7 +502,6 @@ class _HeatCycleScreenState extends State<HeatCycleScreen>
     );
   }
 
-  // ── Вкладка «Календарь» ─────────────────────────────
   Widget _buildCalendarTab(bool isDark) {
     final predicted = _nextPredicted;
     final active = _activeCycle;
@@ -569,7 +564,6 @@ class _HeatCycleScreenState extends State<HeatCycleScreen>
           ),
           const SizedBox(height: 20),
 
-          // Легенда
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4),
             child: Column(
@@ -600,7 +594,6 @@ class _HeatCycleScreenState extends State<HeatCycleScreen>
           ),
           const SizedBox(height: 20),
 
-          // Подсказка о прогнозе
           if (predicted != null)
             Container(
               padding: const EdgeInsets.all(16),
@@ -894,7 +887,7 @@ class _HeatCycleScreenState extends State<HeatCycleScreen>
                 fontWeight: FontWeight.bold,
                 color: AppColors.textPrimary(context))),
         const SizedBox(height: 4),
-        Text('Нажмите кнопку выше\nчтобы начать отслеживание',
+        Text('Нажмите кнопку выше,\nчтобы начать отслеживание',
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 13, color: AppColors.textSecondary(context))),
       ]),

@@ -4,7 +4,6 @@ import 'package:image_picker/image_picker.dart';
 import '../services/api_service.dart';
 import '../theme/app_colors.dart';
 
-
 class PetDetailScreen extends StatefulWidget {
   final Map<String, dynamic> pet;
 
@@ -88,7 +87,7 @@ class _PetDetailScreenState extends State<PetDetailScreen> {
           petId: _pet['id'],
           filePath: img.path,
         );
-          if (result['success']) {
+        if (result['success']) {
           final newUrl = result['data']['photo_url'] as String;
           imageCache.clear();
           imageCache.clearLiveImages();

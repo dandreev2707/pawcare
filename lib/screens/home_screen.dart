@@ -134,7 +134,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   color: AppColors.textPrimary(context))),
           const SizedBox(height: 8),
           Text(
-            'Нажмите кнопку ниже\nчтобы добавить питомца',
+            'Нажмите кнопку ниже,\nчтобы добавить питомца',
             textAlign: TextAlign.center,
             style: TextStyle(
                 fontSize: 14,
@@ -152,7 +152,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildPetCard(Map<String, dynamic> pet) {
     final sex = pet['sex'] == 'male' ? '♂' :
                 pet['sex'] == 'female' ? '♀' : '';
-return GestureDetector(
+    return GestureDetector(
       onTap: () async {
         await context.push('/pet-detail', extra: pet);
         _loadPets();

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:go_router/go_router.dart';
 import '../blocs/auth/auth_cubit.dart';
 import '../services/api_service.dart';
@@ -101,45 +102,42 @@ class _LoginScreenState extends State<LoginScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '1. Скопируйте ссылку и откройте её в браузере на компьютере\n'
-              '2. Войдите в аккаунт Google\n'
-              '3. Введите 8-символьный код со страницы',
+              '1. Нажмите кнопку ниже и войдите в Google\n'
+              '2. Скопируйте 8-символьный код со страницы\n'
+              '3. Введите код в поле ниже',
               style: TextStyle(
                   fontSize: 13, color: AppColors.textSecondary(ctx), height: 1.6),
             ),
             const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(
-                color: AppColors.inputFill(ctx),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: AppColors.border(ctx)),
-              ),
-              child: Row(children: [
-                Expanded(
-                  child: Text(
-                    googleUrl,
-                    style: TextStyle(
-                        fontSize: 10,
-                        color: AppColors.textSecondary(ctx),
-                        fontFamily: 'monospace'),
-                    overflow: TextOverflow.ellipsis,
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () => launchUrl(
+                  Uri.parse(googleUrl),
+                  mode: LaunchMode.externalApplication,
+                ),
+                icon: Container(
+                  width: 20, height: 20,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                  child: const Center(
+                    child: Text('G',
+                        style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF4285F4))),
                   ),
                 ),
-                const SizedBox(width: 4),
-                GestureDetector(
-                  onTap: () {
-                    Clipboard.setData(ClipboardData(text: googleUrl));
-                    ScaffoldMessenger.of(ctx).showSnackBar(
-                      const SnackBar(
-                          content: Text('Ссылка скопирована'),
-                          duration: Duration(seconds: 1)),
-                    );
-                  },
-                  child: const Icon(Icons.copy, size: 16,
-                      color: Color(0xFF4285F4)),
+                label: const Text('Открыть в браузере'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF4285F4),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8)),
                 ),
-              ]),
+              ),
             ),
             const SizedBox(height: 16),
             TextField(
@@ -200,11 +198,29 @@ class _LoginScreenState extends State<LoginScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '1. Откройте бота @PawCareBot в Telegram\n'
+              '1. Нажмите кнопку ниже (@pawcare_notify_bot)\n'
               '2. Введите команду /login\n'
               '3. Введите полученный 6-значный код',
               style: TextStyle(
                   fontSize: 13, color: AppColors.textSecondary(ctx), height: 1.5),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () => launchUrl(
+                  Uri.parse('https://t.me/pawcare_notify_bot'),
+                  mode: LaunchMode.externalApplication,
+                ),
+                icon: const Icon(Icons.send, size: 16),
+                label: const Text('Открыть @pawcare_notify_bot'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF2AABEE),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8)),
+                ),
+              ),
             ),
             const SizedBox(height: 16),
             TextField(
@@ -294,13 +310,12 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Войдите чтобы продолжить',
+                    'Войдите, чтобы продолжить',
                     style: TextStyle(
                         fontSize: 16, color: AppColors.textSecondary(context)),
                   ),
                   const SizedBox(height: 40),
 
-                  // Email
                   _label('Email'),
                   const SizedBox(height: 8),
                   TextField(
@@ -319,7 +334,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   if (_emailTouched && _emailError != null) _errorText(_emailError!),
                   const SizedBox(height: 20),
 
-                  // Пароль
                   _label('Пароль'),
                   const SizedBox(height: 8),
                   TextField(
@@ -351,7 +365,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     _errorText(_passwordError!),
                   const SizedBox(height: 32),
 
-                  // Основная кнопка входа
                   SizedBox(
                     width: double.infinity,
                     height: 54,
@@ -376,7 +389,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 24),
 
-                  // Разделитель
                   Row(children: [
                     Expanded(child: Divider(color: AppColors.border(context))),
                     Padding(
@@ -390,7 +402,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   ]),
                   const SizedBox(height: 16),
 
-                  // Войти через Google
                   SizedBox(
                     width: double.infinity,
                     height: 50,
@@ -431,7 +442,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 12),
 
-                  // Войти через Telegram
                   SizedBox(
                     width: double.infinity,
                     height: 50,

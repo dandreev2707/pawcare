@@ -18,6 +18,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool _loadingTg = true;
   String? _generatedCode;
   bool _generatingCode = false;
+  String _authProvider = 'email';
 
   @override
   void initState() {
@@ -27,16 +28,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _loadTelegramStatus() async {
     setState(() => _loadingTg = true);
-    final result = await ApiService.getTelegramStatus();
-    if (result['success']) {
-      setState(() {
-        _tgLinked = result['data']['linked'];
-        _tgUsername = result['data']['username'];
-        _loadingTg = false;
-      });
-    } else {
-      setState(() => _loadingTg = false);
-    }
+    final results = await Future.wait([
+      ApiService.getTelegramStatus(),
+      ApiService.getMe(),
+    ]);
+    final tgResult   = results[0];
+    final meResult   = results[1];
+    setState(() {
+      if (tgResult['success']) {
+        _tgLinked   = tgResult['data']['linked'];
+        _tgUsername = tgResult['data']['username'];
+      }
+      if (meResult['success']) {
+        _authProvider = meResult['data']['auth_provider'] ?? 'email';
+      }
+      _loadingTg = false;
+    });
   }
 
   Future<void> _generateCode() async {
@@ -96,7 +103,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       color: AppColors.textPrimary(context))),
               const SizedBox(height: 24),
 
-              // Аватар
               Center(
                 child: Container(
                   width: 80,
@@ -111,7 +117,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               const SizedBox(height: 32),
 
-              // Telegram секция
               Text('Telegram',
                   style: TextStyle(
                       fontSize: 16,
@@ -143,7 +148,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               const SizedBox(height: 32),
 
-              // Тёмная тема
               const Text('Оформление',
                   style: TextStyle(
                       fontSize: 16,
@@ -175,7 +179,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               const SizedBox(height: 32),
 
-              // Выход
               SizedBox(
                 width: double.infinity,
                 height: 54,
@@ -259,19 +262,41 @@ class _ProfileScreenState extends State<ProfileScreen> {
           'Вы будете получать уведомления о предстоящих процедурах в Telegram.',
           style: TextStyle(fontSize: 13, color: AppColors.textSecondary(context)),
         ),
-        const SizedBox(height: 16),
-        SizedBox(
-          width: double.infinity,
-          child: OutlinedButton(
-            onPressed: _unlink,
-            style: OutlinedButton.styleFrom(
-              foregroundColor: Colors.red,
-              side: const BorderSide(color: Colors.red),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        if (_authProvider == 'telegram') ...[
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.orange.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: Colors.orange.shade300),
             ),
-            child: const Text('Отвязать Telegram'),
+            child: Row(children: [
+              const Icon(Icons.info_outline, color: Colors.orange, size: 18),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Вы вошли через Telegram — отвязка заблокирует доступ к аккаунту.',
+                  style: TextStyle(fontSize: 12, color: Colors.orange.shade800),
+                ),
+              ),
+            ]),
           ),
-        ),
+        ] else ...[
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton(
+              onPressed: _unlink,
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.red,
+                side: const BorderSide(color: Colors.red),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+              child: const Text('Отвязать Telegram'),
+            ),
+          ),
+        ],
       ],
     );
   }
@@ -301,7 +326,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         const SizedBox(height: 16),
         if (_generatedCode == null) ...[
           Text(
-            'Привяжите Telegram чтобы получать напоминания о процедурах прямо в мессенджер.',
+            'Привяжите Telegram, чтобы получать напоминания о процедурах прямо в мессенджер.',
             style: TextStyle(fontSize: 13, color: AppColors.textSecondary(context)),
           ),
           const SizedBox(height: 16),

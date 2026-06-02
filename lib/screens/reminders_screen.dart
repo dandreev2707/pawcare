@@ -25,7 +25,9 @@ class _RemindersScreenState extends State<RemindersScreen> {
 
   @override
   void dispose() {
-    for (final t in _pendingDone.values) t.cancel();
+    for (final t in _pendingDone.values) {
+      t.cancel();
+    }
     super.dispose();
   }
 
@@ -67,7 +69,6 @@ class _RemindersScreenState extends State<RemindersScreen> {
   }
 
   void _showAddReminderDialog() async {
-    // Сначала получим питомцев
     final petsResult = await ApiService.getPets();
     if (!petsResult['success'] || petsResult['data'].isEmpty) {
       if (mounted) {
@@ -112,7 +113,6 @@ class _RemindersScreenState extends State<RemindersScreen> {
                         color: AppColors.textPrimary(ctx))),
                 const SizedBox(height: 20),
 
-                // Выбор питомца
                 Text('Питомец',
                     style: TextStyle(
                         fontSize: 14, fontWeight: FontWeight.w600,
@@ -138,7 +138,6 @@ class _RemindersScreenState extends State<RemindersScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // Название
                 Text('Название',
                     style: TextStyle(
                         fontSize: 14, fontWeight: FontWeight.w600,
@@ -164,7 +163,6 @@ class _RemindersScreenState extends State<RemindersScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // Дата
                 Text('Дата',
                     style: TextStyle(
                         fontSize: 14, fontWeight: FontWeight.w600,
@@ -213,7 +211,6 @@ class _RemindersScreenState extends State<RemindersScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // Время
                 Text('Время',
                     style: TextStyle(
                         fontSize: 14, fontWeight: FontWeight.w600,
@@ -266,7 +263,6 @@ class _RemindersScreenState extends State<RemindersScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // Повтор
                 Text('Повтор',
                     style: TextStyle(
                         fontSize: 14, fontWeight: FontWeight.w600,
@@ -432,7 +428,6 @@ class _RemindersScreenState extends State<RemindersScreen> {
                               fontSize: 14, color: AppColors.textSecondary(context))),
                     ],
                   ),
-                  // Кнопка добавить
                   GestureDetector(
                     onTap: _showAddReminderDialog,
                     child: Container(
@@ -494,7 +489,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
                   color: AppColors.textPrimary(context))),
           const SizedBox(height: 8),
           Text(
-            'Нажмите + чтобы добавить напоминание\nили добавьте медицинские записи с датой',
+            'Нажмите +, чтобы добавить напоминание\nили добавьте медицинские записи с датой',
             textAlign: TextAlign.center,
             style: TextStyle(
                 fontSize: 14, color: AppColors.textSecondary(context), height: 1.5),

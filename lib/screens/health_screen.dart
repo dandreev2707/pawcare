@@ -315,145 +315,145 @@ class _HealthScreenState extends State<HealthScreen> {
   }
 
   Widget _buildRecordCard(Map<String, dynamic> record) {
-  final info = _getTypeInfo(record['record_type']);
-  return Dismissible(
-    key: Key(record['id']),
-    direction: DismissDirection.endToStart,
-    confirmDismiss: (_) async {
-      return await showDialog<bool>(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16)),
-          title: const Text('Удалить запись?'),
-          content: Text(
-              'Запись "${record['title']}" будет удалена без возможности восстановления.'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Отмена',
-                  style: TextStyle(color: Color(0xFF666666))),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Удалить',
-                  style: TextStyle(color: Colors.red)),
-            ),
-          ],
+    final info = _getTypeInfo(record['record_type']);
+    return Dismissible(
+      key: Key(record['id']),
+      direction: DismissDirection.endToStart,
+      confirmDismiss: (_) async {
+        return await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16)),
+            title: const Text('Удалить запись?'),
+            content: Text(
+                'Запись "${record['title']}" будет удалена без возможности восстановления.'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('Отмена',
+                    style: TextStyle(color: Color(0xFF666666))),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: const Text('Удалить',
+                    style: TextStyle(color: Colors.red)),
+              ),
+            ],
+          ),
+        );
+      },
+      onDismissed: (_) async {
+        await ApiService.deleteHealthRecord(
+          petId: widget.petId,
+          recordId: record['id'],
+        );
+        _loadRecords();
+      },
+      background: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        decoration: BoxDecoration(
+          color: Colors.red,
+          borderRadius: BorderRadius.circular(16),
         ),
-      );
-    },
-    onDismissed: (_) async {
-      await ApiService.deleteHealthRecord(
-        petId: widget.petId,
-        recordId: record['id'],
-      );
-      _loadRecords();
-    },
-    background: Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: Colors.red,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      alignment: Alignment.centerRight,
-      padding: const EdgeInsets.only(right: 20),
-      child: const Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.delete, color: Colors.white, size: 28),
-          SizedBox(height: 4),
-          Text('Удалить',
-              style: TextStyle(color: Colors.white, fontSize: 12)),
-        ],
-      ),
-    ),
-    child: Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: AppColors.card(context),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          )
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 20),
+        child: const Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              width: 48, height: 48,
-              decoration: BoxDecoration(
-                color: info['bg'],
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(info['icon'], color: info['color'], size: 24),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 3),
-                        decoration: BoxDecoration(
-                          color: info['bg'],
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(info['label'],
-                            style: TextStyle(
-                                color: info['color'],
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600)),
-                      ),
-                      Text(record['record_date'] ?? '',
-                          style: const TextStyle(
-                              color: Color(0xFF888888), fontSize: 12)),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  Text(record['title'],
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 15,
-                          color: AppColors.textPrimary(context))),
-                  if (record['description'] != null &&
-                      record['description'].toString().isNotEmpty) ...[
-                    const SizedBox(height: 4),
-                    Text(record['description'],
-                        style: TextStyle(
-                            color: AppColors.textSecondary(context), fontSize: 13)),
-                  ],
-                  if (record['next_date'] != null &&
-                      record['next_date'].toString().isNotEmpty) ...[
-                    const SizedBox(height: 8),
-                    Row(children: [
-                      const Icon(Icons.calendar_today,
-                          size: 13, color: Color(0xFF2C6E49)),
-                      const SizedBox(width: 4),
-                      Text('Следующий раз: ${record['next_date']}',
-                          style: const TextStyle(
-                              color: Color(0xFF2C6E49),
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500)),
-                    ]),
-                  ],
-                ],
-              ),
-            ),
+            Icon(Icons.delete, color: Colors.white, size: 28),
+            SizedBox(height: 4),
+            Text('Удалить',
+                style: TextStyle(color: Colors.white, fontSize: 12)),
           ],
         ),
       ),
-    ),
-  );
-}
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        decoration: BoxDecoration(
+          color: AppColors.card(context),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
+            )
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 48, height: 48,
+                decoration: BoxDecoration(
+                  color: info['bg'],
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(info['icon'], color: info['color'], size: 24),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: info['bg'],
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(info['label'],
+                              style: TextStyle(
+                                  color: info['color'],
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600)),
+                        ),
+                        Text(record['record_date'] ?? '',
+                            style: const TextStyle(
+                                color: Color(0xFF888888), fontSize: 12)),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Text(record['title'],
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                            color: AppColors.textPrimary(context))),
+                    if (record['description'] != null &&
+                        record['description'].toString().isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Text(record['description'],
+                          style: TextStyle(
+                              color: AppColors.textSecondary(context), fontSize: 13)),
+                    ],
+                    if (record['next_date'] != null &&
+                        record['next_date'].toString().isNotEmpty) ...[
+                      const SizedBox(height: 8),
+                      Row(children: [
+                        const Icon(Icons.calendar_today,
+                            size: 13, color: Color(0xFF2C6E49)),
+                        const SizedBox(width: 4),
+                        Text('Следующий раз: ${record['next_date']}',
+                            style: const TextStyle(
+                                color: Color(0xFF2C6E49),
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500)),
+                      ]),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }

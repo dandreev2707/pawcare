@@ -305,7 +305,7 @@ class _WeightScreenState extends State<WeightScreen> {
                             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold,
                                 color: AppColors.textPrimary(context))),
                         const SizedBox(height: 4),
-                        Text('Нажмите кнопку ниже\nчтобы добавить вес',
+                        Text('Нажмите кнопку ниже,\nчтобы добавить вес',
                             textAlign: TextAlign.center,
                             style: TextStyle(fontSize: 13,
                                 color: AppColors.textSecondary(context))),
