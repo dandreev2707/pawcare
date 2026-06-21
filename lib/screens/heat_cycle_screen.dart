@@ -469,7 +469,7 @@ class _HeatCycleScreenState extends State<HeatCycleScreen>
                             borderRadius: BorderRadius.circular(14)),
                       ),
                       icon: const Icon(Icons.play_arrow_rounded),
-                      label: const Text('Начать течку',
+                      label: const Text('Отметить начало цикла',
                           style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                     )
                   : OutlinedButton.icon(
@@ -481,7 +481,7 @@ class _HeatCycleScreenState extends State<HeatCycleScreen>
                             borderRadius: BorderRadius.circular(14)),
                       ),
                       icon: const Icon(Icons.stop_rounded),
-                      label: const Text('Завершить течку',
+                      label: const Text('Отметить завершение',
                           style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                     ),
             ),

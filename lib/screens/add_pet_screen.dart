@@ -242,7 +242,7 @@ class _AddPetScreenState extends State<AddPetScreen> {
             const SizedBox(height: 8),
             Autocomplete<String>(
               optionsBuilder: (TextEditingValue value) {
-                if (value.text.trim().isEmpty) return const Iterable<String>.empty();
+                if (value.text.trim().isEmpty) return _dogBreeds;
                 final q = value.text.toLowerCase();
                 return _dogBreeds.where((b) => b.toLowerCase().contains(q));
               },
