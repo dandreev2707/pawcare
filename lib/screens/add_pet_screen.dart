@@ -14,16 +14,32 @@ class AddPetScreen extends StatefulWidget {
 
 class _AddPetScreenState extends State<AddPetScreen> {
   final _nameController = TextEditingController();
-  final _breedController = TextEditingController();
+  TextEditingController? _breedFieldController;
   String? _selectedSex;
   DateTime? _selectedDate;
   File? _selectedImage;
   bool _isLoading = false;
 
+  static const _dogBreeds = [
+    'Австралийская овчарка', 'Акита-ину', 'Аляскинский маламут',
+    'Американский стаффордширский терьер', 'Бассет-хаунд', 'Бигль',
+    'Бордер-колли', 'Боксёр', 'Бультерьер', 'Бордоский дог',
+    'Веймаранер', 'Вельш-корги', 'Далматинец', 'Джек-рассел-терьер',
+    'Доберман', 'Дворняга', 'Золотистый ретривер', 'Ирландский сеттер',
+    'Кане-корсо', 'Кавказская овчарка', 'Китайская хохлатая',
+    'Кокер-спаниель', 'Лабрадор ретривер', 'Левретка',
+    'Мальтийская болонка', 'Мопс', 'Немецкая овчарка',
+    'Немецкий шпиц', 'Немецкий дог', 'Ньюфаундленд',
+    'Пекинес', 'Пудель', 'Померанский шпиц', 'Ротвейлер',
+    'Русская борзая', 'Самоед', 'Сенбернар', 'Сиба-ину',
+    'Скотч-терьер', 'Спрингер-спаниель', 'Такса', 'Терьер',
+    'Той-терьер', 'Хаски', 'Чихуахуа', 'Шарпей',
+    'Шотландская овчарка', 'Шнауцер', 'Йоркширский терьер',
+  ];
+
   @override
   void dispose() {
     _nameController.dispose();
-    _breedController.dispose();
     super.dispose();
   }
 
@@ -135,11 +151,10 @@ class _AddPetScreenState extends State<AddPetScreen> {
     }
     setState(() => _isLoading = true);
 
+    final breedText = _breedFieldController?.text.trim() ?? '';
     final result = await ApiService.createPet(
       name: _nameController.text.trim(),
-      breed: _breedController.text.trim().isEmpty
-          ? null
-          : _breedController.text.trim(),
+      breed: breedText.isEmpty ? null : breedText,
       birthDate: _selectedDate != null
           ? _selectedDate!.toIso8601String().split('T')[0]
           : null,
@@ -225,7 +240,85 @@ class _AddPetScreenState extends State<AddPetScreen> {
             const SizedBox(height: 20),
             _label('Порода'),
             const SizedBox(height: 8),
-            _textField(controller: _breedController, hint: 'Например: Лабрадор', icon: Icons.category_outlined),
+            Autocomplete<String>(
+              optionsBuilder: (TextEditingValue value) {
+                if (value.text.trim().isEmpty) return const Iterable<String>.empty();
+                final q = value.text.toLowerCase();
+                return _dogBreeds.where((b) => b.toLowerCase().contains(q));
+              },
+              onSelected: (_) {},
+              fieldViewBuilder: (ctx, controller, focusNode, onSubmit) {
+                _breedFieldController = controller;
+                return TextField(
+                  controller: controller,
+                  focusNode: focusNode,
+                  style: TextStyle(color: AppColors.textPrimary(context)),
+                  decoration: InputDecoration(
+                    hintText: 'Например: Лабрадор',
+                    hintStyle: TextStyle(color: AppColors.textSecondary(context)),
+                    prefixIcon: const Icon(Icons.category_outlined, color: AppColors.primary),
+                    filled: true,
+                    fillColor: AppColors.inputFill(context),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: AppColors.border(context)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                    ),
+                  ),
+                );
+              },
+              optionsViewBuilder: (ctx, onSelected, options) {
+                return Align(
+                  alignment: Alignment.topLeft,
+                  child: Material(
+                    elevation: 6,
+                    borderRadius: BorderRadius.circular(12),
+                    color: AppColors.card(context),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxHeight: 220),
+                      child: ListView.separated(
+                        padding: EdgeInsets.zero,
+                        shrinkWrap: true,
+                        itemCount: options.length,
+                        separatorBuilder: (_, __) => Divider(
+                          height: 1,
+                          color: AppColors.border(context),
+                        ),
+                        itemBuilder: (_, i) {
+                          final breed = options.elementAt(i);
+                          return InkWell(
+                            onTap: () => onSelected(breed),
+                            borderRadius: BorderRadius.circular(12),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 13),
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.pets,
+                                      size: 16, color: AppColors.primary),
+                                  const SizedBox(width: 10),
+                                  Text(breed,
+                                      style: TextStyle(
+                                          fontSize: 15,
+                                          color: AppColors.textPrimary(context))),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
             const SizedBox(height: 20),
             _label('Пол'),
             const SizedBox(height: 8),
