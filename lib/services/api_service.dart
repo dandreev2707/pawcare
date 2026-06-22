@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../env.dart';
@@ -294,7 +295,17 @@ class ApiService {
       );
       return {'success': true, 'bytes': response.data};
     } on DioException catch (e) {
-      return {'success': false, 'message': e.response?.data.toString() ?? 'Ошибка экспорта'};
+      String msg = 'Ошибка экспорта';
+      final data = e.response?.data;
+      if (data is List<int>) {
+        try {
+          final decoded = jsonDecode(utf8.decode(data));
+          msg = decoded['detail']?.toString() ?? msg;
+        } catch (_) {}
+      } else if (data != null) {
+        msg = data.toString();
+      }
+      return {'success': false, 'message': msg};
     }
   }
 
